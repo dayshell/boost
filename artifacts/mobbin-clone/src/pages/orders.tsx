@@ -191,8 +191,27 @@ function BoostCard({ boost, onClick, isDark, isRu }: { boost: Boost; onClick: ()
           <div style={{ fontSize: 13, fontWeight: 600, color: textPrimary, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginBottom: 2, lineHeight: 1.3 }}>
             {boost.authorName}
           </div>
-          <div style={{ fontSize: 11, color: textSecondary, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", lineHeight: 1.45 }}>
-            {boost.description || `${boost.currentElo} → ${boost.desiredElo}`}
+          <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 1 }}>
+            <span style={{
+              fontSize: 11, fontWeight: 600, color: textSecondary,
+              background: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)",
+              borderRadius: 5, padding: "2px 6px", whiteSpace: "nowrap", maxWidth: 90,
+              overflow: "hidden", textOverflow: "ellipsis",
+            }}>
+              {boost.currentElo}
+            </span>
+            <svg width="14" height="10" viewBox="0 0 20 12" fill="none" style={{ flexShrink: 0, color: textSecondary }}>
+              <path d="M2 6h14M12 2l4 4-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span style={{
+              fontSize: 11, fontWeight: 700,
+              color: GAME_COLORS[boost.game]?.accent ?? textPrimary,
+              background: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)",
+              borderRadius: 5, padding: "2px 6px", whiteSpace: "nowrap", maxWidth: 90,
+              overflow: "hidden", textOverflow: "ellipsis",
+            }}>
+              {boost.desiredElo}
+            </span>
           </div>
         </div>
       </div>
