@@ -7,6 +7,7 @@ import Home from "@/pages/home";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
 import Dashboard from "@/pages/dashboard";
+import Settings from "@/pages/settings";
 import { LangProvider } from "./LangContext";
 import { ThemeProvider } from "./ThemeContext";
 import { AuthProvider } from "./AuthContext";
@@ -20,6 +21,7 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/dashboard" component={Dashboard} />
+      <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>
   );
