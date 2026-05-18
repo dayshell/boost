@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useLang } from "../LangContext";
 import { useTheme } from "../ThemeContext";
 import { useAuth } from "../AuthContext";
@@ -11,95 +12,116 @@ function RequestGameModal({ onClose }: { onClose: () => void }) {
   const isRu = lang === "ru";
   const [value, setValue] = useState("");
   const [sent, setSent] = useState(false);
-  const overlayRef = useRef<HTMLDivElement>(null);
+  const [focused, setFocused] = useState(false);
 
-  function handleOverlayClick(e: React.MouseEvent) {
-    if (e.target === overlayRef.current) onClose();
-  }
-
-  return (
+  const modal = (
     <div
-      ref={overlayRef}
-      onClick={handleOverlayClick}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
       style={{
-        position: "fixed", inset: 0, zIndex: 2000,
-        background: "rgba(0,0,0,0.72)",
+        position: "fixed", inset: 0, zIndex: 9999,
+        background: "rgba(0,0,0,0.75)",
         display: "flex", alignItems: "center", justifyContent: "center",
-        backdropFilter: "blur(4px)",
+        backdropFilter: "blur(6px)",
+        WebkitBackdropFilter: "blur(6px)",
       }}
     >
       <div style={{
-        width: 360, background: "#1c1c1c", borderRadius: 20,
-        padding: "28px 28px 32px", position: "relative",
-        boxShadow: "0 24px 80px rgba(0,0,0,0.6)",
-        border: "1px solid rgba(255,255,255,0.08)",
+        width: 380, background: "#1e1e1e", borderRadius: 24,
+        padding: "32px 28px 28px", position: "relative",
+        boxShadow: "0 32px 100px rgba(0,0,0,0.7)",
+        border: "1px solid rgba(255,255,255,0.09)",
       }}>
         {/* Close */}
         <button
           onClick={onClose}
           style={{
             position: "absolute", top: 14, right: 14,
-            width: 30, height: 30, borderRadius: "50%",
-            border: "none", background: "rgba(255,255,255,0.1)",
-            color: "#f0f0ee", cursor: "pointer", display: "flex",
-            alignItems: "center", justifyContent: "center",
+            width: 28, height: 28, borderRadius: "50%",
+            border: "none", background: "rgba(255,255,255,0.09)",
+            color: "rgba(240,240,238,0.7)", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            transition: "background 0.15s",
           }}
+          onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.16)")}
+          onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.09)")}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
           </svg>
         </button>
 
         {/* Icon */}
-        <div style={{ textAlign: "center", marginBottom: 18 }}>
-          <span style={{ fontSize: 52 }}>🎮</span>
+        <div style={{ textAlign: "center", marginBottom: 16 }}>
+          <span style={{ fontSize: 56, lineHeight: 1 }}>🎮</span>
         </div>
 
         {/* Title */}
         <h2 style={{
-          textAlign: "center", color: "#f0f0ee", fontFamily: "var(--app-font-sans)",
-          fontWeight: 700, fontSize: 20, letterSpacing: "-0.02em", margin: "0 0 20px",
-          lineHeight: 1.3,
+          textAlign: "center", color: "#f0f0ee",
+          fontFamily: "var(--app-font-sans)",
+          fontWeight: 700, fontSize: 20, letterSpacing: "-0.02em",
+          margin: "0 0 24px", lineHeight: 1.35,
         }}>
           {isRu
-            ? "Какую игру вы хотите чтобы мы добавили на сайт?"
-            : "Which game should we add to the site?"}
+            ? "Какую игру вы хотите\nчтобы мы добавили на сайт?"
+            : "Which game should\nwe add to the site?"}
         </h2>
 
         {sent ? (
-          <div style={{ textAlign: "center", color: "rgba(240,240,238,0.6)", fontSize: 14, padding: "12px 0" }}>
-            {isRu ? "✓ Запрос отправлен, спасибо!" : "✓ Request sent, thank you!"}
+          <div style={{ textAlign: "center", padding: "16px 0" }}>
+            <div style={{ fontSize: 32, marginBottom: 10 }}>✓</div>
+            <div style={{ color: "rgba(240,240,238,0.65)", fontSize: 15 }}>
+              {isRu ? "Запрос отправлен, спасибо!" : "Request sent, thank you!"}
+            </div>
           </div>
         ) : (
           <>
-            <input
-              type="text"
-              placeholder={isRu ? "Название игры..." : "Game name..."}
-              value={value}
-              onChange={e => setValue(e.target.value)}
-              style={{
-                width: "100%", height: 46, padding: "0 16px",
-                borderRadius: 12, border: "1px solid rgba(255,255,255,0.12)",
-                background: "rgba(255,255,255,0.06)",
-                color: "#f0f0ee", fontFamily: "var(--app-font-sans)", fontSize: 15,
-                outline: "none", boxSizing: "border-box",
-                marginBottom: 8,
-              }}
-              onFocus={e => (e.target.style.borderColor = "rgba(255,255,255,0.35)")}
-              onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
-              autoFocus
-            />
-            <p style={{ fontSize: 12, color: "rgba(240,240,238,0.38)", margin: "0 0 20px" }}>
+            {/* Styled input */}
+            <div style={{
+              position: "relative",
+              marginBottom: 10,
+              borderRadius: 9999,
+              background: focused ? "rgba(255,255,255,0.09)" : "rgba(255,255,255,0.06)",
+              border: `1.5px solid ${focused ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.11)"}`,
+              transition: "border-color 0.18s, background 0.18s",
+              display: "flex", alignItems: "center",
+            }}>
+              <svg style={{ position: "absolute", left: 16, opacity: 0.35, flexShrink: 0 }}
+                width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="#f0f0ee" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input
+                type="text"
+                placeholder={isRu ? "Название игры..." : "Game name..."}
+                value={value}
+                onChange={e => setValue(e.target.value)}
+                onFocus={() => setFocused(true)}
+                onBlur={() => setFocused(false)}
+                autoFocus
+                style={{
+                  width: "100%", height: 50, padding: "0 16px 0 42px",
+                  background: "transparent", border: "none", outline: "none",
+                  color: "#f0f0ee", fontFamily: "var(--app-font-sans)",
+                  fontSize: 15, boxSizing: "border-box",
+                }}
+              />
+            </div>
+
+            <p style={{ fontSize: 12, color: "rgba(240,240,238,0.35)", margin: "0 0 20px 4px" }}>
               {isRu ? "Только одна игра за раз." : "Only one per request."}
             </p>
+
             <button
               onClick={() => { if (value.trim()) setSent(true); }}
               style={{
-                width: "100%", height: 46, borderRadius: 9999,
-                background: "#f0f0ee", color: "#111",
-                border: "none", cursor: value.trim() ? "pointer" : "default",
+                width: "100%", height: 50, borderRadius: 9999,
+                background: value.trim() ? "rgba(240,240,238,0.95)" : "rgba(240,240,238,0.18)",
+                color: value.trim() ? "#111" : "rgba(240,240,238,0.45)",
+                border: "none",
+                cursor: value.trim() ? "pointer" : "default",
                 fontFamily: "var(--app-font-sans)", fontSize: 15, fontWeight: 600,
-                opacity: value.trim() ? 1 : 0.45, transition: "opacity 0.15s",
+                transition: "background 0.2s, color 0.2s",
               }}
             >
               {isRu ? "Продолжить" : "Continue"}
@@ -107,14 +129,16 @@ function RequestGameModal({ onClose }: { onClose: () => void }) {
           </>
         )}
 
-        {/* Progress dots */}
-        <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 24 }}>
-          <div style={{ width: 28, height: 4, borderRadius: 9999, background: "#f0f0ee" }} />
-          <div style={{ width: 28, height: 4, borderRadius: 9999, background: "rgba(240,240,238,0.2)" }} />
+        {/* Progress bar */}
+        <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 22 }}>
+          <div style={{ width: 32, height: 4, borderRadius: 9999, background: "#f0f0ee" }} />
+          <div style={{ width: 32, height: 4, borderRadius: 9999, background: "rgba(240,240,238,0.18)" }} />
         </div>
       </div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 }
 
 function BoostLogo({ size = 30 }: { size?: number }) {
