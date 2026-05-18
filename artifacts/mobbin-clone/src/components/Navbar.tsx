@@ -448,8 +448,8 @@ function IconBtn({ children, title, onClick }: { children: React.ReactNode; titl
       style={{
         width: 36, height: 36, borderRadius: 9999, border: "none", cursor: "pointer",
         display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-        background: hov ? "rgba(255,255,255,0.08)" : "transparent",
-        color: hov ? "#f0f0ee" : "rgba(240,240,238,0.55)",
+        background: hov ? "var(--bg-primary-hover)" : "transparent",
+        color: hov ? "var(--text-primary)" : "var(--text-secondary)",
         transition: "background 0.15s, color 0.15s",
       }}
     >
@@ -485,9 +485,9 @@ function AppHeader() {
     <header style={{
       position: "sticky", top: 0, left: 0, right: 0, zIndex: 50,
       height: 60,
-      background: "rgba(14,14,14,0.95)",
+      background: "var(--bg-glass-nav)",
       backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
-      borderBottom: "1px solid rgba(255,255,255,0.06)",
+      borderBottom: "1px solid var(--border-secondary)",
       display: "flex", alignItems: "center",
       padding: "0 24px", gap: 16,
     }}>
@@ -499,12 +499,12 @@ function AppHeader() {
         width: "100%", maxWidth: 480,
         display: "flex", alignItems: "center", gap: 10,
         height: 40, borderRadius: 9999,
-        background: searchFocused ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.07)",
+        background: searchFocused ? "var(--bg-tertiary)" : "var(--bg-secondary)",
         padding: "0 16px",
         transition: "background 0.18s",
         cursor: "text",
       }}>
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,238,0.38)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
           <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
         <input
@@ -516,13 +516,13 @@ function AppHeader() {
           placeholder={isRu ? "Поиск по игре, эло…" : "Search by game, elo…"}
           style={{
             flex: 1, background: "transparent", border: "none", outline: "none",
-            color: "#f0f0ee", fontFamily: "var(--app-font-sans)", fontSize: 14,
+            color: "var(--text-primary)", fontFamily: "var(--app-font-sans)", fontSize: 14,
           }}
         />
         {searchVal && (
           <button onClick={() => handleSearch("")} style={{
             flexShrink: 0, background: "none", border: "none", cursor: "pointer",
-            color: "rgba(240,240,238,0.4)", display: "flex", padding: 0,
+            color: "var(--text-tertiary)", display: "flex", padding: 0,
           }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -532,10 +532,10 @@ function AppHeader() {
         {/* scan/filter icon */}
         <button style={{
           flexShrink: 0, background: "none", border: "none", cursor: "pointer",
-          color: "rgba(240,240,238,0.35)", display: "flex", padding: 0, transition: "color 0.15s",
+          color: "var(--text-tertiary)", display: "flex", padding: 0, transition: "color 0.15s",
         }}
-          onMouseEnter={e => (e.currentTarget.style.color = "rgba(240,240,238,0.75)")}
-          onMouseLeave={e => (e.currentTarget.style.color = "rgba(240,240,238,0.35)")}
+          onMouseEnter={e => (e.currentTarget.style.color = "var(--text-secondary)")}
+          onMouseLeave={e => (e.currentTarget.style.color = "var(--text-tertiary)")}
         >
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 6h18M6 12h12M10 18h4"/>
