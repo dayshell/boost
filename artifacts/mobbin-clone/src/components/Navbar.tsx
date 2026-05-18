@@ -458,121 +458,99 @@ function IconBtn({ children, title, onClick }: { children: React.ReactNode; titl
 }
 
 /* ── Logged-in app header ────────────────────────── */
+export const SearchContext = (window as any).__boostSearchCtx ?? (() => {
+  const listeners: Array<(v: string) => void> = [];
+  const ctx = {
+    value: "",
+    subscribe: (fn: (v: string) => void) => { listeners.push(fn); return () => { const i = listeners.indexOf(fn); if (i >= 0) listeners.splice(i, 1); }; },
+    emit: (v: string) => { ctx.value = v; listeners.forEach(fn => fn(v)); },
+  };
+  (window as any).__boostSearchCtx = ctx;
+  return ctx;
+})();
+
 function AppHeader() {
   const { lang } = useLang();
   const isRu = lang === "ru";
   const [searchFocused, setSearchFocused] = useState(false);
-  const [searchVal, setSearchVal] = useState("");
+  const [searchVal, setSearchVal] = useState(SearchContext.value);
+
+  function handleSearch(v: string) {
+    setSearchVal(v);
+    SearchContext.emit(v);
+  }
 
   return (
     <header style={{
       position: "sticky", top: 0, left: 0, right: 0, zIndex: 50,
       height: 60,
-      background: "rgba(17,17,17,0.92)",
-      backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
-      borderBottom: "1px solid rgba(255,255,255,0.07)",
+      background: "rgba(14,14,14,0.95)",
+      backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
+      borderBottom: "1px solid rgba(255,255,255,0.06)",
       display: "flex", alignItems: "center",
-      padding: "0 20px", gap: 12,
+      padding: "0 24px", gap: 16,
     }}>
-      {/* Search bar */}
+      {/* Left spacer */}
+      <div style={{ flex: 1 }} />
+
+      {/* Search bar — centered */}
       <div style={{
-        flex: 1, maxWidth: 520,
+        width: "100%", maxWidth: 480,
         display: "flex", alignItems: "center", gap: 10,
-        height: 38, borderRadius: 9999,
-        background: searchFocused ? "rgba(255,255,255,0.09)" : "rgba(255,255,255,0.06)",
-        border: `1px solid ${searchFocused ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.09)"}`,
-        padding: "0 14px",
-        transition: "background 0.18s, border-color 0.18s",
+        height: 40, borderRadius: 9999,
+        background: searchFocused ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.07)",
+        padding: "0 16px",
+        transition: "background 0.18s",
         cursor: "text",
       }}>
-        {/* Search icon */}
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,238,0.4)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,238,0.38)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
           <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
         <input
           type="text"
           value={searchVal}
-          onChange={e => setSearchVal(e.target.value)}
+          onChange={e => handleSearch(e.target.value)}
           onFocus={() => setSearchFocused(true)}
           onBlur={() => setSearchFocused(false)}
-          placeholder={isRu ? "Поиск на iOS…" : "Search on iOS…"}
+          placeholder={isRu ? "Поиск по игре, эло…" : "Search by game, elo…"}
           style={{
             flex: 1, background: "transparent", border: "none", outline: "none",
             color: "#f0f0ee", fontFamily: "var(--app-font-sans)", fontSize: 14,
-            "::placeholder": { color: "rgba(240,240,238,0.3)" },
-          } as React.CSSProperties}
+          }}
         />
-        {/* Filter / scan icon */}
+        {searchVal && (
+          <button onClick={() => handleSearch("")} style={{
+            flexShrink: 0, background: "none", border: "none", cursor: "pointer",
+            color: "rgba(240,240,238,0.4)", display: "flex", padding: 0,
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        )}
+        {/* scan/filter icon */}
         <button style={{
           flexShrink: 0, background: "none", border: "none", cursor: "pointer",
-          color: "rgba(240,240,238,0.38)", display: "flex", alignItems: "center", justifyContent: "center",
-          padding: 0, borderRadius: 6, transition: "color 0.15s",
+          color: "rgba(240,240,238,0.35)", display: "flex", padding: 0, transition: "color 0.15s",
         }}
-          onMouseEnter={e => (e.currentTarget.style.color = "#f0f0ee")}
-          onMouseLeave={e => (e.currentTarget.style.color = "rgba(240,240,238,0.38)")}
+          onMouseEnter={e => (e.currentTarget.style.color = "rgba(240,240,238,0.75)")}
+          onMouseLeave={e => (e.currentTarget.style.color = "rgba(240,240,238,0.35)")}
         >
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
-            <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+            <path d="M3 6h18M6 12h12M10 18h4"/>
           </svg>
         </button>
       </div>
 
-      {/* Spacer */}
-      <div style={{ flex: 1 }} />
-
-      {/* Right-side icons */}
-      <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
-        {/* Bookmark */}
-        <IconBtn title={isRu ? "Сохранённое" : "Saved"}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-          </svg>
-        </IconBtn>
-
-        {/* Globe */}
-        <IconBtn title={isRu ? "Обзор" : "Browse"}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="2" y1="12" x2="22" y2="12"/>
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-          </svg>
-        </IconBtn>
-
-        {/* Bell */}
+      {/* Right spacer + icons */}
+      <div style={{ flex: 1, display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 4 }}>
         <IconBtn title={isRu ? "Уведомления" : "Notifications"}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
             <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
           </svg>
         </IconBtn>
-
-        {/* Get Pro button */}
-        <a href="/settings" style={{ textDecoration: "none", marginLeft: 6 }}>
-          <button style={{
-            height: 34, padding: "0 16px", borderRadius: 9999,
-            background: "transparent",
-            border: "1.5px solid rgba(240,240,238,0.75)",
-            color: "#f0f0ee", fontFamily: "var(--app-font-sans)",
-            fontWeight: 600, fontSize: 13, cursor: "pointer",
-            transition: "background 0.15s, border-color 0.15s",
-            whiteSpace: "nowrap",
-          }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = "rgba(255,255,255,0.1)";
-              e.currentTarget.style.borderColor = "#f0f0ee";
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = "transparent";
-              e.currentTarget.style.borderColor = "rgba(240,240,238,0.75)";
-            }}
-          >
-            {isRu ? "Pro план" : "Get Pro"}
-          </button>
-        </a>
-
-        {/* Avatar */}
-        <div style={{ marginLeft: 8 }}>
+        <div style={{ marginLeft: 4 }}>
           <ProfileButton />
         </div>
       </div>

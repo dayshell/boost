@@ -217,7 +217,7 @@ export default function Login() {
                     setStep("password");
                   } else if (step === "password") {
                     login(email);
-                    navigate("/dashboard");
+                    navigate("/orders");
                   }
                 }}
                 style={{ display: "flex", flexDirection: "column", gap: 10 }}
