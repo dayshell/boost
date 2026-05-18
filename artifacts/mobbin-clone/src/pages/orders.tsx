@@ -37,12 +37,20 @@ const GAME_LOGO: Record<string, string> = {
 
 const RANKS: Record<string, string[]> = {
   "CS2": [
-    "Silver 1","Silver 2","Silver 3","Silver 4","Silver Elite","Silver Elite Master",
-    "Gold Nova 1","Gold Nova 2","Gold Nova 3","Gold Nova Master",
-    "MG1","MG2","MGE","DMG","LE","LEM","SMFC","GE",
+    "Silver I","Silver II","Silver III","Silver IV","Silver Elite","Silver Elite Master",
+    "Gold Nova I","Gold Nova II","Gold Nova III","Gold Nova Master",
+    "Master Guardian I","Master Guardian II","Master Guardian Elite","Distinguished Master Guardian",
+    "Legendary Eagle","Legendary Eagle Master","Supreme Master First Class","Global Elite",
   ],
   "Dota 2": [
-    "Herald","Guardian","Crusader","Archon","Legend","Ancient","Divine","Immortal",
+    "Herald 1","Herald 2","Herald 3","Herald 4","Herald 5",
+    "Guardian 1","Guardian 2","Guardian 3","Guardian 4","Guardian 5",
+    "Crusader 1","Crusader 2","Crusader 3","Crusader 4","Crusader 5",
+    "Archon 1","Archon 2","Archon 3","Archon 4","Archon 5",
+    "Legend 1","Legend 2","Legend 3","Legend 4","Legend 5",
+    "Ancient 1","Ancient 2","Ancient 3","Ancient 4","Ancient 5",
+    "Divine 1","Divine 2","Divine 3","Divine 4","Divine 5",
+    "Immortal",
   ],
   "Valorant": [
     "Iron 1","Iron 2","Iron 3",
@@ -166,7 +174,7 @@ function BoostCard({ boost, onClick, isDark }: { boost: Boost; onClick: () => vo
           <CardPreview boost={boost}/>
         </div>
         {fresh && (
-          <div style={{ position: "absolute", top: 16, left: 16, background: isDark ? "#f0f0ee" : "#131415", color: isDark ? "#111" : "#fff", fontSize: 10, fontWeight: 700, letterSpacing: "0.04em", borderRadius: 6, padding: "3px 8px", fontFamily: "var(--app-font-sans)" }}>New</div>
+          <div style={{ position: "absolute", top: 16, left: 16, background: "#ffffff", color: "#111111", fontSize: 10, fontWeight: 700, letterSpacing: "0.04em", borderRadius: 6, padding: "3px 8px", fontFamily: "var(--app-font-sans)" }}>New</div>
         )}
         <div style={{ position: "absolute", top: 16, right: 16, width: 26, height: 26, borderRadius: 7, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", opacity: hov ? 1 : 0, transition: "opacity 0.15s" }}>
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
@@ -181,6 +189,10 @@ function BoostCard({ boost, onClick, isDark }: { boost: Boost; onClick: () => vo
           <div style={{ fontSize: 11, color: textSecondary, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", lineHeight: 1.45 }}>
             {boost.description || `${boost.currentElo} → ${boost.desiredElo}`}
           </div>
+        </div>
+        <div style={{ flexShrink: 0, textAlign: "right", paddingTop: 1 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: textPrimary, lineHeight: 1.3 }}>${Number(boost.budget).toFixed(0)}</div>
+          <div style={{ fontSize: 10, color: textSecondary, lineHeight: 1.3 }}>budget</div>
         </div>
       </div>
     </div>
@@ -255,13 +267,13 @@ interface FilterState {
   budgetRange: [number, number];
   rankFrom: string;
   rankTo: string;
+  filterGame: string;
 }
 
-function FilterPanel({ onClose, filters, setFilters, gameFilter, isDark, isRu }: {
+function FilterPanel({ onClose, filters, setFilters, isDark, isRu }: {
   onClose: () => void;
   filters: FilterState;
   setFilters: (f: FilterState) => void;
-  gameFilter: string;
   isDark: boolean;
   isRu: boolean;
 }) {
@@ -281,24 +293,49 @@ function FilterPanel({ onClose, filters, setFilters, gameFilter, isDark, isRu }:
   const textPrimary = isDark ? "#f0f0ee" : "#131415";
   const textMuted = isDark ? "rgba(240,240,238,0.45)" : "#666660";
   const chipBg = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)";
-  const chipActiveBg = isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.12)";
 
-  const rankList = gameFilter !== "all" ? (RANKS[gameFilter] ?? []) : [];
-  const accent = gameFilter !== "all" ? GAME_COLORS[gameFilter].accent : (isDark ? "#f0f0ee" : "#131415");
+  const selectedGame = local.filterGame !== "all" ? local.filterGame : "";
+  const rankList = selectedGame ? (RANKS[selectedGame] ?? []) : [];
+  const accent = selectedGame ? GAME_COLORS[selectedGame].accent : (isDark ? "#f0f0ee" : "#131415");
 
   const lbl: React.CSSProperties = { fontSize: 10, fontWeight: 700, color: textMuted, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 10, display: "block" };
 
   function apply() { setFilters(local); onClose(); }
-  function reset() { setLocal({ budgetRange: [0, MAX_BUDGET], rankFrom: "", rankTo: "" }); }
-  const dirty = local.budgetRange[0] > 0 || local.budgetRange[1] < MAX_BUDGET || !!local.rankFrom || !!local.rankTo;
+  function reset() { setLocal({ budgetRange: [0, MAX_BUDGET], rankFrom: "", rankTo: "", filterGame: "all" }); }
+  const dirty = local.budgetRange[0] > 0 || local.budgetRange[1] < MAX_BUDGET || !!local.rankFrom || !!local.rankTo || local.filterGame !== "all";
 
   return (
     <div ref={panelRef} style={{
       position: "absolute", top: "calc(100% + 6px)", left: 0,
-      width: 320, background: bg, border: `1px solid ${border}`,
+      width: 340, background: bg, border: `1px solid ${border}`,
       borderRadius: 14, boxShadow: "0 12px 40px rgba(0,0,0,0.3)",
       zIndex: 200, padding: "18px 18px 14px", fontFamily: "var(--app-font-sans)",
     }}>
+
+      {/* Game selector */}
+      <div style={{ marginBottom: 20 }}>
+        <span style={lbl as React.CSSProperties}>{isRu ? "Игра" : "Game"}</span>
+        <div style={{ display: "flex", gap: 6 }}>
+          {(["all", ...GAMES] as const).map(g => {
+            const active = local.filterGame === g;
+            const col = g !== "all" ? GAME_COLORS[g] : null;
+            return (
+              <button key={g} onClick={() => setLocal(p => ({ ...p, filterGame: g, rankFrom: "", rankTo: "" }))}
+                style={{
+                  flex: 1, height: 34, borderRadius: 8, border: "none", cursor: "pointer",
+                  background: active ? (col ? col.dim : (isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.1)")) : chipBg,
+                  color: active ? (col ? col.accent : textPrimary) : textMuted,
+                  fontFamily: "var(--app-font-sans)", fontWeight: active ? 700 : 400, fontSize: 12,
+                  transition: "all 0.12s",
+                  outline: active ? `1.5px solid ${col ? col.accent : (isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.18)")}` : "none",
+                }}>
+                {g === "all" ? (isRu ? "Все" : "All") : g}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Budget slider */}
       <div style={{ marginBottom: 20 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
@@ -319,11 +356,11 @@ function FilterPanel({ onClose, filters, setFilters, gameFilter, isDark, isRu }:
         </div>
       </div>
 
-      {/* Rank filter — only when a game is selected */}
+      {/* Rank filters — only when a specific game is selected */}
       {rankList.length > 0 && (
         <div style={{ marginBottom: 18 }}>
           <span style={lbl as React.CSSProperties}>{isRu ? "Текущий ранг" : "Current rank"}</span>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 5, maxHeight: 120, overflowY: "auto" }}>
             {rankList.map(rank => {
               const active = local.rankFrom === rank;
               return (
@@ -346,7 +383,7 @@ function FilterPanel({ onClose, filters, setFilters, gameFilter, isDark, isRu }:
       {rankList.length > 0 && (
         <div style={{ marginBottom: 18 }}>
           <span style={lbl as React.CSSProperties}>{isRu ? "Желаемый ранг" : "Target rank"}</span>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 5, maxHeight: 120, overflowY: "auto" }}>
             {rankList.map(rank => {
               const active = local.rankTo === rank;
               return (
@@ -530,7 +567,7 @@ const GAME_TABS: { id: GameFilter; label: string }[] = [
 ];
 
 /* ── Page ─────────────────────────────────────────── */
-const DEFAULT_FILTERS: FilterState = { budgetRange: [0, MAX_BUDGET], rankFrom: "", rankTo: "" };
+const DEFAULT_FILTERS: FilterState = { budgetRange: [0, MAX_BUDGET], rankFrom: "", rankTo: "", filterGame: "all" };
 
 export default function Boosts() {
   const { user } = useAuth();
@@ -551,10 +588,11 @@ export default function Boosts() {
   useEffect(() => { if (!user) navigate("/login"); }, [user]);
   useEffect(() => SearchContext.subscribe(v => setSearch(v)), []);
 
-  const hasActiveFilters = filters.budgetRange[0] > 0 || filters.budgetRange[1] < MAX_BUDGET || !!filters.rankFrom || !!filters.rankTo;
+  const hasActiveFilters = filters.budgetRange[0] > 0 || filters.budgetRange[1] < MAX_BUDGET || !!filters.rankFrom || !!filters.rankTo || filters.filterGame !== "all";
 
   let list = [...boosts];
   if (gameFilter !== "all") list = list.filter(b => b.game === gameFilter);
+  if (filters.filterGame !== "all") list = list.filter(b => b.game === filters.filterGame);
   if (search.trim()) {
     const q = search.toLowerCase();
     list = list.filter(b =>
@@ -654,7 +692,6 @@ export default function Boosts() {
                   onClose={() => setShowFilters(false)}
                   filters={filters}
                   setFilters={f => { setFilters(f); setShowFilters(false); }}
-                  gameFilter={gameFilter}
                   isDark={isDark}
                   isRu={isRu}
                 />
@@ -683,6 +720,14 @@ export default function Boosts() {
         {(search || hasActiveFilters) && (
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 18, flexWrap: "wrap" }}>
             <span style={{ fontSize: 12, color: textMuted }}>{list.length} {isRu ? "заявок" : "results"}</span>
+            {filters.filterGame !== "all" && (
+              <span style={{ display: "flex", alignItems: "center", gap: 5, background: GAME_COLORS[filters.filterGame]?.dim ?? (isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)"), borderRadius: 20, padding: "3px 10px 3px 12px", fontSize: 12, color: GAME_COLORS[filters.filterGame]?.accent ?? textPrimary, fontWeight: 600 }}>
+                {filters.filterGame}
+                <button onClick={() => setFilters(p => ({ ...p, filterGame: "all", rankFrom: "", rankTo: "" }))} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, color: "inherit", display: "flex", opacity: 0.7 }}>
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </span>
+            )}
             {search && (
               <span style={{ display: "flex", alignItems: "center", gap: 5, background: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)", borderRadius: 20, padding: "3px 10px 3px 12px", fontSize: 12, color: textPrimary }}>
                 «{search}»
