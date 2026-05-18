@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useParams } from "wouter";
 import { useLang } from "../LangContext";
 import { useAuth } from "../AuthContext";
+import { useTheme } from "../ThemeContext";
 import Navbar from "../components/Navbar";
 import type { Boost } from "./orders";
 
@@ -12,23 +13,32 @@ function loadBoosts(): Boost[] {
   } catch { return []; }
 }
 
-const GAME_COLORS: Record<string, { bg: string; text: string }> = {
-  "CS2":      { bg: "rgba(255,171,0,0.12)",  text: "#ffab00" },
-  "Dota 2":   { bg: "rgba(218,55,55,0.12)",  text: "#e05050" },
-  "Valorant": { bg: "rgba(255,70,85,0.12)",  text: "#ff4655" },
+const USD_TO_RUB = 90;
+
+const GAME_COLORS: Record<string, { accent: string; dim: string; glow: string }> = {
+  "CS2":      { accent: "#ffab00", dim: "rgba(255,171,0,0.13)",  glow: "rgba(255,171,0,0.22)" },
+  "Dota 2":   { accent: "#e05050", dim: "rgba(218,55,55,0.13)",  glow: "rgba(218,55,55,0.22)" },
+  "Valorant": { accent: "#ff4655", dim: "rgba(255,70,85,0.13)",  glow: "rgba(255,70,85,0.22)" },
 };
 
-function InfoBlock({ label, value }: { label: string; value: string }) {
+const GAME_LOGO: Record<string, string> = {
+  "CS2":      "/games/cs2_new.png",
+  "Dota 2":   "/games/dota2_new.png",
+  "Valorant": "/games/valorant_new.png",
+};
+
+function StatCard({ label, value, accent }: { label: string; value: string; accent?: string }) {
   return (
     <div style={{
-      background: "#1a1a1a",
-      border: "1px solid rgba(255,255,255,0.08)",
-      borderRadius: 12, padding: "14px 18px",
+      background: "rgba(255,255,255,0.04)",
+      border: "1px solid rgba(255,255,255,0.07)",
+      borderRadius: 14, padding: "16px 18px",
+      display: "flex", flexDirection: "column", gap: 6,
     }}>
-      <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(240,240,238,0.38)", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 6 }}>
+      <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(240,240,238,0.35)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
         {label}
       </div>
-      <div style={{ fontSize: 15, fontWeight: 600, color: "#f0f0ee" }}>
+      <div style={{ fontSize: 16, fontWeight: 700, color: accent ?? "#f0f0ee", letterSpacing: "-0.01em" }}>
         {value}
       </div>
     </div>
@@ -39,9 +49,10 @@ export default function BoostDetail() {
   const { id } = useParams<{ id: string }>();
   const { lang } = useLang();
   const { user } = useAuth();
+  const { theme } = useTheme();
   const [, navigate] = useLocation();
   const isRu = lang === "ru";
-  const USD_TO_RUB = 90;
+  const isDark = theme === "dark" || (theme === "system" && typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches);
   const [boost, setBoost] = useState<Boost | null>(null);
 
   useEffect(() => {
@@ -52,20 +63,26 @@ export default function BoostDetail() {
 
   if (!user) return null;
 
+  const pageBg = isDark ? "#111111" : "#f5f5f4";
+  const cardBg = isDark ? "#181818" : "#ffffff";
+  const cardBorder = isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.08)";
+  const textPrimary = isDark ? "#f0f0ee" : "#131415";
+  const textMuted = isDark ? "rgba(240,240,238,0.38)" : "#888880";
+
   if (!boost) {
     return (
-      <div style={{ minHeight: "100dvh", background: "#111111", fontFamily: "var(--app-font-sans)" }}>
+      <div style={{ minHeight: "100dvh", background: pageBg, fontFamily: "var(--app-font-sans)" }}>
         <Navbar />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "calc(100dvh - 60px)" }}>
           <div style={{ textAlign: "center" }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: "#f0f0ee", marginBottom: 8 }}>
+            <div style={{ fontSize: 20, fontWeight: 700, color: textPrimary, marginBottom: 8 }}>
               {isRu ? "Заявка не найдена" : "Request not found"}
             </div>
             <button onClick={() => navigate("/boosts")} style={{
               marginTop: 8, height: 42, padding: "0 20px", borderRadius: 10,
-              background: "rgba(255,255,255,0.08)", border: "none", cursor: "pointer",
-              color: "#f0f0ee", fontFamily: "var(--app-font-sans)", fontWeight: 600, fontSize: 14,
+              background: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.07)", border: "none", cursor: "pointer",
+              color: textPrimary, fontFamily: "var(--app-font-sans)", fontWeight: 600, fontSize: 14,
             }}>
               {isRu ? "К заявкам" : "Back to requests"}
             </button>
@@ -75,7 +92,10 @@ export default function BoostDetail() {
     );
   }
 
-  const col = GAME_COLORS[boost.game];
+  const col = GAME_COLORS[boost.game] ?? { accent: "#f0f0ee", dim: "rgba(240,240,238,0.1)", glow: "rgba(240,240,238,0.15)" };
+  const budgetDisplay = isRu
+    ? `₽${Math.round(Number(boost.budget) * USD_TO_RUB).toLocaleString("ru-RU")}`
+    : `$${Number(boost.budget).toFixed(0)}`;
   const createdDate = new Date(boost.createdAt).toLocaleDateString(isRu ? "ru-RU" : "en-US", {
     day: "numeric", month: "long", year: "numeric",
   });
@@ -84,149 +104,194 @@ export default function BoostDetail() {
   });
 
   return (
-    <div style={{ minHeight: "100dvh", background: "#111111", fontFamily: "var(--app-font-sans)" }}>
+    <div style={{ minHeight: "100dvh", background: pageBg, fontFamily: "var(--app-font-sans)" }}>
       <Navbar />
-      <div style={{ maxWidth: 680, margin: "0 auto", padding: "40px 24px" }}>
 
-        {/* Back */}
+      <div style={{ maxWidth: 800, margin: "0 auto", padding: "32px 20px 64px" }}>
+
+        {/* ── Back button ── */}
         <button
           onClick={() => navigate("/boosts")}
           style={{
-            display: "flex", alignItems: "center", gap: 6,
+            display: "inline-flex", alignItems: "center", gap: 7,
             background: "none", border: "none", cursor: "pointer",
-            color: "rgba(240,240,238,0.4)", fontFamily: "var(--app-font-sans)",
-            fontSize: 14, fontWeight: 500, padding: 0, marginBottom: 28,
+            color: textMuted, fontFamily: "var(--app-font-sans)",
+            fontSize: 13, fontWeight: 500, padding: 0, marginBottom: 28,
             transition: "color 0.15s",
           }}
-          onMouseEnter={e => (e.currentTarget.style.color = "#f0f0ee")}
-          onMouseLeave={e => (e.currentTarget.style.color = "rgba(240,240,238,0.4)")}
+          onMouseEnter={e => (e.currentTarget.style.color = textPrimary)}
+          onMouseLeave={e => (e.currentTarget.style.color = textMuted)}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="15 18 9 12 15 6"/>
           </svg>
           {isRu ? "Все заявки" : "All requests"}
         </button>
 
-        {/* Header card */}
+        {/* ── Hero card ── */}
         <div style={{
-          background: "#171717", border: "1px solid rgba(255,255,255,0.08)",
-          borderRadius: 20, padding: "28px", marginBottom: 12,
+          background: cardBg,
+          border: `1px solid ${cardBorder}`,
+          borderRadius: 24,
+          overflow: "hidden",
+          marginBottom: 12,
+          boxShadow: isDark ? "0 2px 40px rgba(0,0,0,0.35)" : "0 2px 20px rgba(0,0,0,0.07)",
         }}>
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 22 }}>
-            {/* Game icon */}
-            <div style={{
-              width: 56, height: 56, borderRadius: 14, flexShrink: 0,
-              background: col.bg,
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
-              {boost.game === "Valorant" ? (
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-                  <path d="M4 18L12 4l8 14H4z" fill={col.text} opacity="0.9"/>
-                </svg>
-              ) : (
-                <span style={{ fontSize: 13, fontWeight: 800, color: col.text, fontFamily: "var(--app-font-sans)", letterSpacing: "-0.02em" }}>
-                  {boost.game === "CS2" ? "CS2" : "D2"}
-                </span>
-              )}
-            </div>
-
-            <div style={{ flex: 1 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 5, flexWrap: "wrap" }}>
-                <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#f0f0ee", letterSpacing: "-0.025em" }}>
-                  {boost.authorName}
-                </h1>
-                <span style={{
-                  fontSize: 12, fontWeight: 600, padding: "3px 10px", borderRadius: 20,
-                  background: col.bg, color: col.text,
-                }}>
-                  {boost.game}
-                </span>
-              </div>
-              <div style={{ fontSize: 13, color: "rgba(240,240,238,0.3)" }}>
-                {createdDate} {isRu ? "в" : "at"} {createdTime}
-              </div>
-            </div>
-
-            {/* Budget */}
-            <div style={{ textAlign: "right", flexShrink: 0 }}>
-              <div style={{ fontSize: 30, fontWeight: 700, color: "#f0f0ee", letterSpacing: "-0.03em", fontVariantNumeric: "tabular-nums" }}>
-                {isRu ? `₽${Math.round(Number(boost.budget) * USD_TO_RUB).toLocaleString("ru-RU")}` : `$${Number(boost.budget).toFixed(2)}`}
-              </div>
-              <div style={{ fontSize: 12, color: "rgba(240,240,238,0.28)", marginTop: 2 }}>{isRu ? "RUB" : "USD"}</div>
-            </div>
-          </div>
-
-          {/* ELO progress bar */}
+          {/* Coloured top strip */}
           <div style={{
-            display: "flex", alignItems: "center", gap: 14,
-            background: "rgba(255,255,255,0.04)", borderRadius: 12, padding: "16px 20px",
-          }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 11, color: "rgba(240,240,238,0.35)", marginBottom: 5, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                {isRu ? "Текущий ранг" : "Current rank"}
+            height: 5,
+            background: `linear-gradient(to right, ${col.accent}, ${col.glow})`,
+          }} />
+
+          <div style={{ padding: "28px 28px 24px" }}>
+
+            {/* Top row: game + author + budget */}
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 18, marginBottom: 28, flexWrap: "wrap" }}>
+
+              {/* Game logo */}
+              <div style={{
+                width: 64, height: 64, borderRadius: 16, flexShrink: 0,
+                background: col.dim,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                border: `1.5px solid ${col.glow}`,
+                boxShadow: `0 0 20px ${col.glow}`,
+              }}>
+                <img src={GAME_LOGO[boost.game]} alt={boost.game}
+                  style={{ width: 38, height: 38, objectFit: "contain" }} />
               </div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "rgba(240,240,238,0.6)" }}>
-                {boost.currentElo}
+
+              {/* Author & meta */}
+              <div style={{ flex: 1, minWidth: 180 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 5, flexWrap: "wrap" }}>
+                  <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: textPrimary, letterSpacing: "-0.03em" }}>
+                    {boost.authorName}
+                  </h1>
+                  <span style={{
+                    fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20,
+                    background: col.dim, color: col.accent, letterSpacing: "0.03em",
+                    border: `1px solid ${col.glow}`,
+                  }}>
+                    {boost.game}
+                  </span>
+                </div>
+                <div style={{ fontSize: 12, color: textMuted }}>
+                  {createdDate} {isRu ? "в" : "at"} {createdTime}
+                </div>
+              </div>
+
+              {/* Budget pill */}
+              <div style={{
+                flexShrink: 0, textAlign: "right",
+                background: "#ffffff", borderRadius: 12, padding: "8px 18px",
+                boxShadow: "0 2px 12px rgba(0,0,0,0.18)",
+              }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: "#888", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 2 }}>
+                  {isRu ? "Бюджет" : "Budget"}
+                </div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: "#111", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+                  {budgetDisplay}
+                </div>
               </div>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={col.text} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-              </svg>
-              <div style={{ width: 56, height: 3, borderRadius: 99, background: `linear-gradient(to right, rgba(240,240,238,0.15), ${col.text})` }} />
-            </div>
-
-            <div style={{ flex: 1, textAlign: "right" }}>
-              <div style={{ fontSize: 11, color: "rgba(240,240,238,0.35)", marginBottom: 5, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                {isRu ? "Желаемый ранг" : "Target rank"}
+            {/* ── Rank progress block ── */}
+            <div style={{
+              background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)",
+              border: `1px solid ${cardBorder}`,
+              borderRadius: 16, padding: "20px 24px",
+              display: "flex", alignItems: "center", gap: 0,
+            }}>
+              {/* Current */}
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: textMuted, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>
+                  {isRu ? "Текущий ранг" : "Current rank"}
+                </div>
+                <div style={{
+                  display: "inline-flex", alignItems: "center", gap: 8,
+                  background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
+                  borderRadius: 10, padding: "8px 14px",
+                }}>
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: textMuted, flexShrink: 0 }} />
+                  <span style={{ fontSize: 15, fontWeight: 600, color: textPrimary }}>{boost.currentElo}</span>
+                </div>
               </div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: col.text }}>
-                {boost.desiredElo}
+
+              {/* Arrow */}
+              <div style={{ flexShrink: 0, padding: "0 20px", display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+                <div style={{ width: 80, height: 2, background: `linear-gradient(to right, ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)"}, ${col.accent})`, borderRadius: 2 }} />
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={col.accent} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                </svg>
+              </div>
+
+              {/* Target */}
+              <div style={{ flex: 1, textAlign: "right" }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: textMuted, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>
+                  {isRu ? "Желаемый ранг" : "Target rank"}
+                </div>
+                <div style={{
+                  display: "inline-flex", alignItems: "center", gap: 8,
+                  background: col.dim, borderRadius: 10, padding: "8px 14px",
+                  border: `1px solid ${col.glow}`,
+                }}>
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: col.accent, flexShrink: 0, boxShadow: `0 0 6px ${col.accent}` }} />
+                  <span style={{ fontSize: 15, fontWeight: 700, color: col.accent }}>{boost.desiredElo}</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Details grid */}
+        {/* ── Info grid ── */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
-          <InfoBlock label={isRu ? "Контакт" : "Contact"} value={boost.contact} />
-          <InfoBlock
-            label={isRu ? "Время буста (МСК)" : "Boost time (MSK)"}
+          <StatCard label={isRu ? "Контакт" : "Contact"} value={boost.contact} />
+          <StatCard
+            label={isRu ? "Время (МСК)" : "Time (MSK)"}
             value={`${boost.timeFrom} — ${boost.timeTo}`}
           />
         </div>
 
-        {/* Description */}
+        {/* ── Description ── */}
         {boost.description && (
           <div style={{
-            background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: 12, padding: "16px 18px", marginBottom: 10,
+            background: cardBg, border: `1px solid ${cardBorder}`,
+            borderRadius: 16, padding: "20px 22px", marginBottom: 10,
           }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(240,240,238,0.35)", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 8 }}>
-              {isRu ? "Описание" : "Description"}
+            <div style={{ fontSize: 10, fontWeight: 700, color: textMuted, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>
+              {isRu ? "О себе" : "About"}
             </div>
-            <div style={{ fontSize: 14, color: "rgba(240,240,238,0.7)", lineHeight: 1.65 }}>
+            <div style={{ fontSize: 14, color: textPrimary, lineHeight: 1.7, opacity: 0.8 }}>
               {boost.description}
             </div>
           </div>
         )}
 
-        {/* CTA */}
+        {/* ── CTA ── */}
         <div style={{
-          marginTop: 20, background: "rgba(255,255,255,0.03)",
-          border: "1px solid rgba(255,255,255,0.07)",
-          borderRadius: 14, padding: "20px 22px",
-          display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap",
+          background: cardBg, border: `1px solid ${cardBorder}`,
+          borderRadius: 20, padding: "24px 26px",
+          display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap",
+          marginTop: 4,
         }}>
-          <div style={{ flex: 1, minWidth: 180 }}>
-            <div style={{ fontSize: 15, fontWeight: 600, color: "#f0f0ee", marginBottom: 4 }}>
-              {isRu ? "Готовы взяться за буст?" : "Ready to take this boost?"}
+          {/* Avatar */}
+          <div style={{
+            width: 48, height: 48, borderRadius: "50%", flexShrink: 0,
+            background: col.dim, border: `2px solid ${col.glow}`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 18, fontWeight: 700, color: col.accent,
+          }}>
+            {boost.authorName.charAt(0).toUpperCase()}
+          </div>
+
+          <div style={{ flex: 1, minWidth: 160 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: textPrimary, marginBottom: 3 }}>
+              {isRu ? `${boost.authorName} ищет бустера` : `${boost.authorName} is looking for a booster`}
             </div>
-            <div style={{ fontSize: 13, color: "rgba(240,240,238,0.38)" }}>
-              {isRu ? `Свяжитесь с ${boost.authorName}` : `Contact ${boost.authorName} directly`}
+            <div style={{ fontSize: 12, color: textMuted }}>
+              {isRu ? "Напишите напрямую, чтобы взяться за заявку" : "Reach out directly to take this request"}
             </div>
           </div>
+
           <button
             onClick={() => {
               const c = boost.contact;
@@ -234,15 +299,17 @@ export default function BoostDetail() {
               if (url) window.open(url, "_blank");
             }}
             style={{
-              height: 44, padding: "0 24px", borderRadius: 12,
-              background: "#f0f0ee", border: "none", cursor: "pointer",
-              color: "#111", fontFamily: "var(--app-font-sans)", fontWeight: 700, fontSize: 14,
-              transition: "opacity 0.15s", flexShrink: 0,
+              height: 46, padding: "0 28px", borderRadius: 12, flexShrink: 0,
+              background: col.accent, border: "none", cursor: "pointer",
+              color: "#111", fontFamily: "var(--app-font-sans)", fontWeight: 800, fontSize: 14,
+              letterSpacing: "-0.01em",
+              boxShadow: `0 4px 20px ${col.glow}`,
+              transition: "opacity 0.15s, transform 0.12s",
             }}
-            onMouseEnter={e => (e.currentTarget.style.opacity = "0.88")}
-            onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+            onMouseEnter={e => { e.currentTarget.style.opacity = "0.88"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+            onMouseLeave={e => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.transform = "translateY(0)"; }}
           >
-            {isRu ? "Связаться" : "Contact"}
+            {isRu ? "Написать" : "Contact"}
           </button>
         </div>
 
