@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../AuthContext";
 import { useLang } from "../LangContext";
 import { useLocation } from "wouter";
@@ -22,125 +22,277 @@ export interface Boost {
 
 const GAMES = ["CS2", "Dota 2", "Valorant"] as const;
 
-const GAME_COLORS: Record<string, { bg: string; text: string }> = {
-  "CS2":      { bg: "rgba(255,171,0,0.12)",  text: "#ffab00" },
-  "Dota 2":   { bg: "rgba(218,55,55,0.12)",  text: "#e05050" },
-  "Valorant": { bg: "rgba(255,70,85,0.12)",  text: "#ff4655" },
+const GAME_COLORS: Record<string, { accent: string; dim: string; gradient: string }> = {
+  "CS2":      { accent: "#ffab00", dim: "rgba(255,171,0,0.18)",  gradient: "radial-gradient(ellipse at 30% 40%, rgba(255,171,0,0.22) 0%, transparent 65%), radial-gradient(ellipse at 75% 65%, rgba(255,140,0,0.12) 0%, transparent 55%)" },
+  "Dota 2":   { accent: "#e05050", dim: "rgba(218,55,55,0.18)",  gradient: "radial-gradient(ellipse at 30% 40%, rgba(200,40,40,0.25) 0%, transparent 65%), radial-gradient(ellipse at 75% 65%, rgba(160,30,30,0.15) 0%, transparent 55%)" },
+  "Valorant": { accent: "#ff4655", dim: "rgba(255,70,85,0.18)",  gradient: "radial-gradient(ellipse at 30% 40%, rgba(255,50,70,0.25) 0%, transparent 65%), radial-gradient(ellipse at 75% 65%, rgba(200,30,50,0.15) 0%, transparent 55%)" },
 };
 
 /* ── Seed data ──────────────────────────────────── */
 const SEED_BOOSTS: Boost[] = [
-  {
-    id: "seed-1",
-    authorName: "Артём K.",
-    authorEmail: "artem@example.com",
-    game: "CS2",
-    currentElo: "Silver 3",
-    desiredElo: "Gold Nova 2",
-    contact: "@artem_boost",
-    description: "Аккаунт чистый, без банов. Хочу побыстрее — готов к овертайму. Играю на ноутбуке, поэтому пингует иногда.",
-    timeFrom: "10:00",
-    timeTo: "23:00",
-    budget: "35.00",
-    createdAt: new Date(Date.now() - 1000 * 60 * 18).toISOString(),
-  },
-  {
-    id: "seed-2",
-    authorName: "Maksim_D",
-    authorEmail: "maks@example.com",
-    game: "Valorant",
-    currentElo: "Iron 2",
-    desiredElo: "Bronze 3",
-    contact: "discord: maks#4421",
-    description: "Нужно поднять до Bronze 3 как можно скорее, платить готов сразу после буста.",
-    timeFrom: "18:00",
-    timeTo: "02:00",
-    budget: "28.00",
-    createdAt: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
-  },
-  {
-    id: "seed-3",
-    authorName: "SerpentX",
-    authorEmail: "serp@example.com",
-    game: "Dota 2",
-    currentElo: "1 800 MMR",
-    desiredElo: "2 500 MMR",
-    contact: "@serpentx_dota",
-    description: "",
-    timeFrom: "09:00",
-    timeTo: "21:00",
-    budget: "60.00",
-    createdAt: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
-  },
-  {
-    id: "seed-4",
-    authorName: "nika_val",
-    authorEmail: "nika@example.com",
-    game: "Valorant",
-    currentElo: "Silver 1",
-    desiredElo: "Platinum 1",
-    contact: "t.me/nika_boost",
-    description: "Хочу в платину до конца сезона. Смотреть не буду, просто хочу результат. Аккаунт с 300+ матчами.",
-    timeFrom: "11:00",
-    timeTo: "20:00",
-    budget: "90.00",
-    createdAt: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
-  },
-  {
-    id: "seed-5",
-    authorName: "ProPlayerZero",
-    authorEmail: "zero@example.com",
-    game: "CS2",
-    currentElo: "MG1",
-    desiredElo: "DMG",
-    contact: "@zero_cs2",
-    description: "Аккаунт старый, Prime статус есть. Играть желательно в пиковые часы.",
-    timeFrom: "20:00",
-    timeTo: "01:00",
-    budget: "50.00",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
-  },
-  {
-    id: "seed-6",
-    authorName: "ivannn99",
-    authorEmail: "ivan99@example.com",
-    game: "Dota 2",
-    currentElo: "3 100 MMR",
-    desiredElo: "4 000 MMR",
-    contact: "vk.com/ivannn99",
-    description: "900 MMR разрыв, понимаю что дорого. Бюджет обсуждаем.",
-    timeFrom: "14:00",
-    timeTo: "22:00",
-    budget: "120.00",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString(),
-  },
-  {
-    id: "seed-7",
-    authorName: "DimaTwitch",
-    authorEmail: "dima@example.com",
-    game: "CS2",
-    currentElo: "GN4",
-    desiredElo: "Master Guardian Elite",
-    contact: "discord: dima#7731",
-    description: "Стримлю иногда — желательно не удалять игровую историю.",
-    timeFrom: "00:00",
-    timeTo: "06:00",
-    budget: "42.00",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString(),
-  },
+  { id: "seed-1", authorName: "Артём K.", authorEmail: "artem@example.com", game: "CS2", currentElo: "Silver 3", desiredElo: "Gold Nova 2", contact: "@artem_boost", description: "Аккаунт чистый, без банов. Хочу побыстрее — готов к овертайму.", timeFrom: "10:00", timeTo: "23:00", budget: "35.00", createdAt: new Date(Date.now() - 1000 * 60 * 18).toISOString() },
+  { id: "seed-2", authorName: "Maksim_D", authorEmail: "maks@example.com", game: "Valorant", currentElo: "Iron 2", desiredElo: "Bronze 3", contact: "discord: maks#4421", description: "Нужно поднять до Bronze 3 как можно скорее.", timeFrom: "18:00", timeTo: "02:00", budget: "28.00", createdAt: new Date(Date.now() - 1000 * 60 * 45).toISOString() },
+  { id: "seed-3", authorName: "SerpentX", authorEmail: "serp@example.com", game: "Dota 2", currentElo: "1 800 MMR", desiredElo: "2 500 MMR", contact: "@serpentx_dota", description: "Жду быстрого буста, аккаунт готов.", timeFrom: "09:00", timeTo: "21:00", budget: "60.00", createdAt: new Date(Date.now() - 1000 * 60 * 90).toISOString() },
+  { id: "seed-4", authorName: "nika_val", authorEmail: "nika@example.com", game: "Valorant", currentElo: "Silver 1", desiredElo: "Platinum 1", contact: "t.me/nika_boost", description: "Хочу в платину до конца сезона. Аккаунт с 300+ матчами.", timeFrom: "11:00", timeTo: "20:00", budget: "90.00", createdAt: new Date(Date.now() - 1000 * 60 * 180).toISOString() },
+  { id: "seed-5", authorName: "ProPlayerZero", authorEmail: "zero@example.com", game: "CS2", currentElo: "MG1", desiredElo: "DMG", contact: "@zero_cs2", description: "Аккаунт старый, Prime статус есть.", timeFrom: "20:00", timeTo: "01:00", budget: "50.00", createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString() },
+  { id: "seed-6", authorName: "ivannn99", authorEmail: "ivan99@example.com", game: "Dota 2", currentElo: "3 100 MMR", desiredElo: "4 000 MMR", contact: "vk.com/ivannn99", description: "900 MMR разрыв, бюджет обсуждаем.", timeFrom: "14:00", timeTo: "22:00", budget: "120.00", createdAt: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString() },
+  { id: "seed-7", authorName: "DimaTwitch", authorEmail: "dima@example.com", game: "CS2", currentElo: "GN4", desiredElo: "Master Guardian Elite", contact: "discord: dima#7731", description: "Стримлю иногда — желательно не удалять игровую историю.", timeFrom: "00:00", timeTo: "06:00", budget: "42.00", createdAt: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString() },
+  { id: "seed-8", authorName: "Alex_Boost", authorEmail: "alex@example.com", game: "Valorant", currentElo: "Gold 2", desiredElo: "Diamond 1", contact: "@alex_val", description: "Нужно до Даймонда, готов ждать неделю.", timeFrom: "12:00", timeTo: "23:00", budget: "150.00", createdAt: new Date(Date.now() - 1000 * 60 * 60 * 20).toISOString() },
 ];
 
 function loadBoosts(): Boost[] {
   try {
     const raw = localStorage.getItem("boost_boosts");
     if (raw) return JSON.parse(raw);
-    // First load — seed test data
     localStorage.setItem("boost_boosts", JSON.stringify(SEED_BOOSTS));
     return SEED_BOOSTS;
   } catch { return SEED_BOOSTS; }
 }
 export function saveBoosts(boosts: Boost[]) {
   localStorage.setItem("boost_boosts", JSON.stringify(boosts));
+}
+
+function timeAgo(dateStr: string, isRu: boolean): string {
+  const diff = Math.round((Date.now() - new Date(dateStr).getTime()) / 60000);
+  if (diff < 1) return isRu ? "только что" : "just now";
+  if (diff < 60) return isRu ? `${diff} мин.` : `${diff}m ago`;
+  if (diff < 1440) { const h = Math.round(diff / 60); return isRu ? `${h} ч.` : `${h}h ago`; }
+  const d = Math.round(diff / 1440); return isRu ? `${d} д.` : `${d}d ago`;
+}
+
+function isNew(dateStr: string): boolean {
+  return Date.now() - new Date(dateStr).getTime() < 1000 * 60 * 60 * 3;
+}
+
+/* ── Game logo icon ──────────────────────────────── */
+function GameLogo({ game, size = 28 }: { game: string; size?: number }) {
+  const col = GAME_COLORS[game];
+  const r = Math.round(size * 0.25);
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: r, flexShrink: 0,
+      background: col.dim,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      border: `1px solid rgba(255,255,255,0.07)`,
+    }}>
+      {game === "Valorant" ? (
+        <svg width={size * 0.48} height={size * 0.48} viewBox="0 0 20 20" fill="none">
+          <path d="M3 17L10 3l7 14H3z" fill={col.accent}/>
+        </svg>
+      ) : game === "CS2" ? (
+        <span style={{ fontSize: size * 0.28, fontWeight: 800, color: col.accent, fontFamily: "var(--app-font-sans)", letterSpacing: "-0.04em", lineHeight: 1 }}>CS2</span>
+      ) : (
+        <span style={{ fontSize: size * 0.3, fontWeight: 800, color: col.accent, fontFamily: "var(--app-font-sans)", lineHeight: 1 }}>D2</span>
+      )}
+    </div>
+  );
+}
+
+/* ── Boost card — Mobbin-style ───────────────────── */
+function BoostCard({ boost, onClick }: { boost: Boost; onClick: () => void }) {
+  const { lang } = useLang();
+  const isRu = lang === "ru";
+  const [hov, setHov] = useState(false);
+  const col = GAME_COLORS[boost.game];
+  const fresh = isNew(boost.createdAt);
+
+  return (
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        background: "#1a1a1a",
+        border: "1px solid rgba(255,255,255,0.07)",
+        borderRadius: 12, overflow: "hidden",
+        cursor: "pointer",
+        transition: "border-color 0.15s, transform 0.15s",
+        borderColor: hov ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.07)",
+        transform: hov ? "translateY(-2px)" : "none",
+      }}
+    >
+      {/* ── Preview area ── */}
+      <div style={{
+        position: "relative",
+        height: 170,
+        background: `${col.gradient}, #161616`,
+        overflow: "hidden",
+      }}>
+        {/* Grid lines decoration */}
+        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.06 }} preserveAspectRatio="none">
+          <defs>
+            <pattern id={`g-${boost.id}`} width="32" height="32" patternUnits="userSpaceOnUse">
+              <path d="M 32 0 L 0 0 0 32" fill="none" stroke="white" strokeWidth="0.5"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill={`url(#g-${boost.id})`}/>
+        </svg>
+
+        {/* Center content: elo range */}
+        <div style={{
+          position: "absolute", inset: 0, display: "flex", flexDirection: "column",
+          alignItems: "center", justifyContent: "center", gap: 6,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {/* From */}
+            <div style={{
+              background: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)",
+              border: "1px solid rgba(255,255,255,0.09)",
+              borderRadius: 8, padding: "8px 14px", textAlign: "center",
+            }}>
+              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 3 }}>
+                {isRu ? "сейчас" : "from"}
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "rgba(255,255,255,0.6)", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
+                {boost.currentElo}
+              </div>
+            </div>
+
+            {/* Arrow */}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={col.accent} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"/>
+              <polyline points="13 6 19 12 13 18"/>
+            </svg>
+
+            {/* To */}
+            <div style={{
+              background: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)",
+              border: `1px solid ${col.dim}`,
+              borderRadius: 8, padding: "8px 14px", textAlign: "center",
+            }}>
+              <div style={{ fontSize: 10, color: col.accent, opacity: 0.7, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 3 }}>
+                {isRu ? "цель" : "to"}
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: col.accent, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
+                {boost.desiredElo}
+              </div>
+            </div>
+          </div>
+
+          {/* Budget pill */}
+          <div style={{
+            background: "rgba(0,0,0,0.5)", backdropFilter: "blur(6px)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            borderRadius: 20, padding: "4px 12px",
+            fontSize: 12, fontWeight: 700, color: "#f0f0ee",
+            fontVariantNumeric: "tabular-nums",
+          }}>
+            ${Number(boost.budget).toFixed(2)}
+          </div>
+        </div>
+
+        {/* "New" badge — top left */}
+        {fresh && (
+          <div style={{
+            position: "absolute", top: 10, left: 10,
+            background: "#f0f0ee", color: "#111",
+            fontSize: 10, fontWeight: 700, letterSpacing: "0.04em",
+            borderRadius: 6, padding: "3px 7px",
+            fontFamily: "var(--app-font-sans)",
+          }}>
+            New
+          </div>
+        )}
+
+        {/* Bookmark icon — top right */}
+        <div style={{
+          position: "absolute", top: 9, right: 9,
+          width: 28, height: 28, borderRadius: 7,
+          background: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)",
+          border: "1px solid rgba(255,255,255,0.1)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          opacity: hov ? 1 : 0.6, transition: "opacity 0.15s",
+        }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+      </div>
+
+      {/* ── Card footer ── */}
+      <div style={{
+        padding: "10px 12px 12px",
+        display: "flex", alignItems: "flex-start", gap: 9,
+      }}>
+        <GameLogo game={boost.game} size={30} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{
+            fontSize: 13, fontWeight: 600, color: "#f0f0ee",
+            whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+            marginBottom: 2, lineHeight: 1.3,
+          }}>
+            {boost.authorName}
+          </div>
+          <div style={{
+            fontSize: 11, color: "rgba(240,240,238,0.38)",
+            whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+            lineHeight: 1.4,
+          }}>
+            {boost.description
+              ? boost.description.slice(0, 48) + (boost.description.length > 48 ? "…" : "")
+              : `${boost.currentElo} → ${boost.desiredElo}`}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Filter dropdown ─────────────────────────────── */
+function FilterDropdown({ activeGame, onSelect, onClose }: {
+  activeGame: string | null;
+  onSelect: (g: string | null) => void;
+  onClose: () => void;
+}) {
+  const { lang } = useLang();
+  const isRu = lang === "ru";
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) onClose(); };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, []);
+
+  return (
+    <div ref={ref} style={{
+      position: "absolute", top: "calc(100% + 6px)", right: 0,
+      background: "#1e1e1e", border: "1px solid rgba(255,255,255,0.1)",
+      borderRadius: 10, padding: "5px", minWidth: 150,
+      boxShadow: "0 12px 40px rgba(0,0,0,0.55)", zIndex: 200,
+    }}>
+      {([null, "CS2", "Dota 2", "Valorant"] as (string | null)[]).map(opt => {
+        const active = activeGame === opt;
+        const col = opt ? GAME_COLORS[opt] : null;
+        return (
+          <button key={opt ?? "all"} onClick={() => { onSelect(opt); onClose(); }}
+            style={{
+              width: "100%", display: "flex", alignItems: "center", gap: 9,
+              padding: "8px 10px", borderRadius: 7, border: "none", cursor: "pointer",
+              background: active ? "rgba(255,255,255,0.08)" : "transparent",
+              color: active ? "#f0f0ee" : "rgba(240,240,238,0.5)",
+              fontFamily: "var(--app-font-sans)", fontSize: 13, fontWeight: active ? 600 : 400,
+              textAlign: "left", transition: "background 0.1s",
+            }}
+            onMouseEnter={e => !active && (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
+            onMouseLeave={e => !active && (e.currentTarget.style.background = "transparent")}
+          >
+            {opt ? <GameLogo game={opt} size={18} /> : (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/>
+              </svg>
+            )}
+            {opt ?? (isRu ? "Все игры" : "All games")}
+            {active && (
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={col?.accent ?? "#f0f0ee"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: "auto" }}>
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
 }
 
 /* ── Create Boost Modal ─────────────────────────── */
@@ -159,345 +311,163 @@ function CreateBoostModal({ onClose, onCreated }: { onClose: () => void; onCreat
   const [budget, setBudget] = useState("");
   const [errors, setErrors] = useState<Record<string, boolean>>({});
 
-  const inputStyle: React.CSSProperties = {
-    width: "100%", height: 44, padding: "0 14px",
-    borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)",
+  const inp: React.CSSProperties = {
+    width: "100%", height: 42, padding: "0 13px",
+    borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)",
     background: "rgba(255,255,255,0.05)",
     color: "#f0f0ee", fontFamily: "var(--app-font-sans)", fontSize: 14,
     outline: "none", boxSizing: "border-box", transition: "border-color 0.15s",
   };
-  const labelStyle: React.CSSProperties = {
-    fontSize: 12, fontWeight: 600, color: "rgba(240,240,238,0.5)",
-    letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: 6, display: "block",
+  const lbl: React.CSSProperties = {
+    fontSize: 11, fontWeight: 600, color: "rgba(240,240,238,0.45)",
+    letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 5, display: "block",
   };
 
-  function handleSubmit() {
+  function submit() {
     const err: Record<string, boolean> = {};
     if (!currentElo.trim()) err.currentElo = true;
     if (!desiredElo.trim()) err.desiredElo = true;
     if (!contact.trim()) err.contact = true;
     if (!budget.trim()) err.budget = true;
     if (Object.keys(err).length) { setErrors(err); return; }
-
     const boost: Boost = {
-      id: Date.now().toString(),
-      authorName: user?.name ?? "User",
-      authorEmail: user?.email ?? "",
-      game,
-      currentElo: currentElo.trim(),
-      desiredElo: desiredElo.trim(),
-      contact: contact.trim(),
-      description: description.trim(),
-      timeFrom,
-      timeTo,
-      budget: budget.trim(),
-      createdAt: new Date().toISOString(),
+      id: Date.now().toString(), authorName: user?.name ?? "User", authorEmail: user?.email ?? "",
+      game, currentElo: currentElo.trim(), desiredElo: desiredElo.trim(),
+      contact: contact.trim(), description: description.trim(),
+      timeFrom, timeTo, budget: budget.trim(), createdAt: new Date().toISOString(),
     };
-    const all = loadBoosts();
-    all.unshift(boost);
-    saveBoosts(all);
-    onCreated(boost);
-    onClose();
+    const all = loadBoosts(); all.unshift(boost); saveBoosts(all);
+    onCreated(boost); onClose();
   }
 
-  const modal = (
-    <div
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
-      style={{
-        position: "fixed", inset: 0, zIndex: 9999,
-        background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)",
-        WebkitBackdropFilter: "blur(8px)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: "20px",
-      }}
-    >
+  return createPortal(
+    <div onClick={e => e.target === e.currentTarget && onClose()} style={{
+      position: "fixed", inset: 0, zIndex: 9999,
+      background: "rgba(0,0,0,0.75)", backdropFilter: "blur(10px)",
+      display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+    }}>
       <div style={{
-        width: "100%", maxWidth: 560,
-        background: "#161616",
-        border: "1px solid rgba(255,255,255,0.1)",
-        borderRadius: 20,
-        boxShadow: "0 40px 120px rgba(0,0,0,0.8)",
-        overflow: "hidden",
-        maxHeight: "90vh", display: "flex", flexDirection: "column",
+        width: "100%", maxWidth: 520, background: "#161616",
+        border: "1px solid rgba(255,255,255,0.1)", borderRadius: 18,
+        boxShadow: "0 40px 100px rgba(0,0,0,0.8)",
+        maxHeight: "92vh", display: "flex", flexDirection: "column",
       }}>
-        {/* Header */}
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "22px 24px 18px",
-          borderBottom: "1px solid rgba(255,255,255,0.07)",
-          flexShrink: 0,
-        }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 22px 16px", borderBottom: "1px solid rgba(255,255,255,0.07)", flexShrink: 0 }}>
           <div>
-            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#f0f0ee", letterSpacing: "-0.02em" }}>
-              {isRu ? "Новая заявка на буст" : "New Boost Request"}
+            <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: "#f0f0ee", letterSpacing: "-0.02em" }}>
+              {isRu ? "Новая заявка" : "New Boost Request"}
             </h2>
-            <p style={{ margin: "4px 0 0", fontSize: 13, color: "rgba(240,240,238,0.4)" }}>
-              {isRu ? "Заполните детали буста" : "Fill in boost details"}
+            <p style={{ margin: "3px 0 0", fontSize: 12, color: "rgba(240,240,238,0.35)" }}>
+              {isRu ? "Заполните детали и разместите заявку" : "Fill in the details and post"}
             </p>
           </div>
-          <button onClick={onClose} style={{
-            width: 32, height: 32, borderRadius: "50%", border: "none",
-            background: "rgba(255,255,255,0.08)", cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(240,240,238,0.6)",
-            transition: "background 0.15s",
-          }}
+          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: "50%", border: "none", background: "rgba(255,255,255,0.08)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(240,240,238,0.6)" }}
             onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.14)")}
             onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
           </button>
         </div>
 
-        {/* Body */}
-        <div style={{ padding: "20px 24px 24px", overflowY: "auto", display: "flex", flexDirection: "column", gap: 18 }}>
-          {/* Game */}
+        <div style={{ padding: "18px 22px 20px", overflowY: "auto", display: "flex", flexDirection: "column", gap: 14 }}>
           <div>
-            <label style={labelStyle}>{isRu ? "Игра" : "Game"}</label>
-            <div style={{ display: "flex", gap: 8 }}>
+            <label style={lbl}>{isRu ? "Игра" : "Game"}</label>
+            <div style={{ display: "flex", gap: 7 }}>
               {GAMES.map(g => {
                 const active = game === g;
                 const col = GAME_COLORS[g];
                 return (
                   <button key={g} onClick={() => setGame(g)} style={{
-                    flex: 1, height: 42, borderRadius: 10, border: "none", cursor: "pointer",
-                    background: active ? col.bg : "rgba(255,255,255,0.04)",
-                    color: active ? col.text : "rgba(240,240,238,0.5)",
-                    fontFamily: "var(--app-font-sans)", fontWeight: active ? 700 : 500, fontSize: 13,
-                    transition: "all 0.15s",
-                    outline: active ? `1.5px solid ${col.text}40` : "none",
-                    outlineOffset: "1px",
-                  }}>
-                    {g}
-                  </button>
+                    flex: 1, height: 38, borderRadius: 9, border: "none", cursor: "pointer",
+                    background: active ? col.dim : "rgba(255,255,255,0.04)",
+                    color: active ? col.accent : "rgba(240,240,238,0.4)",
+                    fontFamily: "var(--app-font-sans)", fontWeight: active ? 700 : 400, fontSize: 13,
+                    transition: "all 0.12s", outline: active ? `1px solid ${col.dim}` : "none", outlineOffset: 1,
+                  }}>{g}</button>
                 );
               })}
             </div>
           </div>
 
-          {/* ELO row */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             <div>
-              <label style={{ ...labelStyle, color: errors.currentElo ? "#e05050" : "rgba(240,240,238,0.5)" }}>
-                {isRu ? "Текущее эло / ранг" : "Current elo / rank"}
+              <label style={{ ...lbl, color: errors.currentElo ? "#e05050" : "rgba(240,240,238,0.45)" }}>
+                {isRu ? "Текущий ранг" : "Current rank"}
               </label>
-              <input
-                value={currentElo} onChange={e => { setCurrentElo(e.target.value); setErrors(p => ({ ...p, currentElo: false })); }}
-                placeholder={isRu ? "напр. Silver 2" : "e.g. Silver 2"}
-                style={{ ...inputStyle, borderColor: errors.currentElo ? "#e05050" : "rgba(255,255,255,0.1)" }}
-                onFocus={e => (e.target.style.borderColor = "rgba(255,255,255,0.3)")}
-                onBlur={e => (e.target.style.borderColor = errors.currentElo ? "#e05050" : "rgba(255,255,255,0.1)")}
-              />
+              <input value={currentElo} onChange={e => { setCurrentElo(e.target.value); setErrors(p => ({ ...p, currentElo: false })); }} placeholder="Silver 2"
+                style={{ ...inp, borderColor: errors.currentElo ? "#e05050" : "rgba(255,255,255,0.1)" }}
+                onFocus={e => (e.target.style.borderColor = "rgba(255,255,255,0.28)")}
+                onBlur={e => (e.target.style.borderColor = errors.currentElo ? "#e05050" : "rgba(255,255,255,0.1)")} />
             </div>
             <div>
-              <label style={{ ...labelStyle, color: errors.desiredElo ? "#e05050" : "rgba(240,240,238,0.5)" }}>
-                {isRu ? "Желаемое эло / ранг" : "Desired elo / rank"}
+              <label style={{ ...lbl, color: errors.desiredElo ? "#e05050" : "rgba(240,240,238,0.45)" }}>
+                {isRu ? "Желаемый ранг" : "Target rank"}
               </label>
-              <input
-                value={desiredElo} onChange={e => { setDesiredElo(e.target.value); setErrors(p => ({ ...p, desiredElo: false })); }}
-                placeholder={isRu ? "напр. Gold Nova 3" : "e.g. Gold Nova 3"}
-                style={{ ...inputStyle, borderColor: errors.desiredElo ? "#e05050" : "rgba(255,255,255,0.1)" }}
-                onFocus={e => (e.target.style.borderColor = "rgba(255,255,255,0.3)")}
-                onBlur={e => (e.target.style.borderColor = errors.desiredElo ? "#e05050" : "rgba(255,255,255,0.1)")}
-              />
+              <input value={desiredElo} onChange={e => { setDesiredElo(e.target.value); setErrors(p => ({ ...p, desiredElo: false })); }} placeholder="Gold Nova 3"
+                style={{ ...inp, borderColor: errors.desiredElo ? "#e05050" : "rgba(255,255,255,0.1)" }}
+                onFocus={e => (e.target.style.borderColor = "rgba(255,255,255,0.28)")}
+                onBlur={e => (e.target.style.borderColor = errors.desiredElo ? "#e05050" : "rgba(255,255,255,0.1)")} />
             </div>
           </div>
 
-          {/* Contact */}
           <div>
-            <label style={{ ...labelStyle, color: errors.contact ? "#e05050" : "rgba(240,240,238,0.5)" }}>
-              {isRu ? "Контакт для связи" : "Contact"}
-            </label>
-            <input
-              value={contact} onChange={e => { setContact(e.target.value); setErrors(p => ({ ...p, contact: false })); }}
-              placeholder="Telegram, Discord, VK…"
-              style={{ ...inputStyle, borderColor: errors.contact ? "#e05050" : "rgba(255,255,255,0.1)" }}
-              onFocus={e => (e.target.style.borderColor = "rgba(255,255,255,0.3)")}
-              onBlur={e => (e.target.style.borderColor = errors.contact ? "#e05050" : "rgba(255,255,255,0.1)")}
-            />
+            <label style={{ ...lbl, color: errors.contact ? "#e05050" : "rgba(240,240,238,0.45)" }}>{isRu ? "Контакт" : "Contact"}</label>
+            <input value={contact} onChange={e => { setContact(e.target.value); setErrors(p => ({ ...p, contact: false })); }} placeholder="Telegram, Discord, VK…"
+              style={{ ...inp, borderColor: errors.contact ? "#e05050" : "rgba(255,255,255,0.1)" }}
+              onFocus={e => (e.target.style.borderColor = "rgba(255,255,255,0.28)")}
+              onBlur={e => (e.target.style.borderColor = errors.contact ? "#e05050" : "rgba(255,255,255,0.1)")} />
           </div>
 
-          {/* Description */}
           <div>
-            <label style={labelStyle}>{isRu ? "Описание (необязательно)" : "Description (optional)"}</label>
-            <textarea
-              value={description} onChange={e => setDescription(e.target.value)}
-              placeholder={isRu ? "Расскажите подробнее о вашем аккаунте или пожеланиях…" : "Tell more about your account or requirements…"}
-              rows={3}
-              style={{
-                ...inputStyle, height: "auto", padding: "12px 14px",
-                resize: "vertical", lineHeight: 1.5,
-              }}
-            />
+            <label style={lbl}>{isRu ? "Описание (необязательно)" : "Description (optional)"}</label>
+            <textarea value={description} onChange={e => setDescription(e.target.value)}
+              placeholder={isRu ? "Расскажите о вашем аккаунте…" : "About your account…"} rows={2}
+              style={{ ...inp, height: "auto", padding: "10px 13px", resize: "vertical", lineHeight: 1.5 }} />
           </div>
 
-          {/* Time range */}
-          <div>
-            <label style={labelStyle}>{isRu ? "Время буста (МСК)" : "Boost time (MSK)"}</label>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: 10, alignItems: "center" }}>
-              <input
-                type="time" value={timeFrom} onChange={e => setTimeFrom(e.target.value)}
-                style={{ ...inputStyle, colorScheme: "dark" }}
-              />
-              <span style={{ color: "rgba(240,240,238,0.3)", fontSize: 14, textAlign: "center" }}>—</span>
-              <input
-                type="time" value={timeTo} onChange={e => setTimeTo(e.target.value)}
-                style={{ ...inputStyle, colorScheme: "dark" }}
-              />
+          <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: 8, alignItems: "center" }}>
+            <div>
+              <label style={lbl}>{isRu ? "С" : "From"}</label>
+              <input type="time" value={timeFrom} onChange={e => setTimeFrom(e.target.value)} style={{ ...inp, colorScheme: "dark" }} />
             </div>
-            <p style={{ margin: "6px 0 0", fontSize: 12, color: "rgba(240,240,238,0.3)" }}>
-              {isRu ? "Когда бустер может заходить в ваш аккаунт" : "When booster can access your account"}
-            </p>
+            <span style={{ color: "rgba(240,240,238,0.2)", fontSize: 13, paddingTop: 24 }}>—</span>
+            <div>
+              <label style={lbl}>{isRu ? "До" : "To"}</label>
+              <input type="time" value={timeTo} onChange={e => setTimeTo(e.target.value)} style={{ ...inp, colorScheme: "dark" }} />
+            </div>
           </div>
 
-          {/* Budget */}
           <div>
-            <label style={{ ...labelStyle, color: errors.budget ? "#e05050" : "rgba(240,240,238,0.5)" }}>
-              {isRu ? "Бюджет (USD)" : "Budget (USD)"}
-            </label>
+            <label style={{ ...lbl, color: errors.budget ? "#e05050" : "rgba(240,240,238,0.45)" }}>{isRu ? "Бюджет (USD)" : "Budget (USD)"}</label>
             <div style={{ position: "relative" }}>
-              <span style={{
-                position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
-                color: "rgba(240,240,238,0.4)", fontSize: 14, pointerEvents: "none",
-              }}>$</span>
-              <input
-                value={budget} onChange={e => { setBudget(e.target.value); setErrors(p => ({ ...p, budget: false })); }}
-                placeholder="0.00" type="number" min="0" step="0.01"
-                style={{ ...inputStyle, paddingLeft: 28, borderColor: errors.budget ? "#e05050" : "rgba(255,255,255,0.1)" }}
-                onFocus={e => (e.target.style.borderColor = "rgba(255,255,255,0.3)")}
-                onBlur={e => (e.target.style.borderColor = errors.budget ? "#e05050" : "rgba(255,255,255,0.1)")}
-              />
+              <span style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", color: "rgba(240,240,238,0.3)", fontSize: 14, pointerEvents: "none" }}>$</span>
+              <input value={budget} onChange={e => { setBudget(e.target.value); setErrors(p => ({ ...p, budget: false })); }} placeholder="0.00" type="number" min="0" step="0.01"
+                style={{ ...inp, paddingLeft: 26, borderColor: errors.budget ? "#e05050" : "rgba(255,255,255,0.1)" }}
+                onFocus={e => (e.target.style.borderColor = "rgba(255,255,255,0.28)")}
+                onBlur={e => (e.target.style.borderColor = errors.budget ? "#e05050" : "rgba(255,255,255,0.1)")} />
             </div>
           </div>
         </div>
 
-        {/* Footer */}
-        <div style={{
-          padding: "16px 24px 20px",
-          borderTop: "1px solid rgba(255,255,255,0.07)",
-          display: "flex", gap: 10, flexShrink: 0,
-        }}>
-          <button onClick={onClose} style={{
-            flex: 1, height: 46, borderRadius: 12,
-            background: "rgba(255,255,255,0.06)", border: "none", cursor: "pointer",
-            color: "rgba(240,240,238,0.6)", fontFamily: "var(--app-font-sans)", fontWeight: 600, fontSize: 14,
-            transition: "background 0.15s",
-          }}
+        <div style={{ padding: "14px 22px 18px", borderTop: "1px solid rgba(255,255,255,0.07)", display: "flex", gap: 9, flexShrink: 0 }}>
+          <button onClick={onClose} style={{ flex: 1, height: 42, borderRadius: 9, background: "rgba(255,255,255,0.06)", border: "none", cursor: "pointer", color: "rgba(240,240,238,0.55)", fontFamily: "var(--app-font-sans)", fontWeight: 600, fontSize: 13 }}
             onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.1)")}
             onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.06)")}
-          >
-            {isRu ? "Отмена" : "Cancel"}
-          </button>
-          <button onClick={handleSubmit} style={{
-            flex: 2, height: 46, borderRadius: 12,
-            background: "#f0f0ee", border: "none", cursor: "pointer",
-            color: "#111", fontFamily: "var(--app-font-sans)", fontWeight: 700, fontSize: 14,
-            transition: "opacity 0.15s",
-          }}
+          >{isRu ? "Отмена" : "Cancel"}</button>
+          <button onClick={submit} style={{ flex: 2, height: 42, borderRadius: 9, background: "#f0f0ee", border: "none", cursor: "pointer", color: "#111", fontFamily: "var(--app-font-sans)", fontWeight: 700, fontSize: 13, transition: "opacity 0.12s" }}
             onMouseEnter={e => (e.currentTarget.style.opacity = "0.88")}
             onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
-          >
-            {isRu ? "Разместить заявку" : "Post Boost Request"}
-          </button>
+          >{isRu ? "Разместить заявку" : "Post Request"}</button>
         </div>
       </div>
-    </div>
-  );
-
-  return createPortal(modal, document.body);
-}
-
-/* ── Boost card ─────────────────────────────────── */
-function BoostCard({ boost, onClick }: { boost: Boost; onClick: () => void }) {
-  const { lang } = useLang();
-  const isRu = lang === "ru";
-  const [hov, setHov] = useState(false);
-  const col = GAME_COLORS[boost.game];
-
-  const now = Date.now();
-  const created = new Date(boost.createdAt).getTime();
-  const diffMin = Math.round((now - created) / 60000);
-  let timeLabel: string;
-  if (diffMin < 1) timeLabel = isRu ? "только что" : "just now";
-  else if (diffMin < 60) timeLabel = isRu ? `${diffMin} мин. назад` : `${diffMin}m ago`;
-  else if (diffMin < 1440) {
-    const h = Math.round(diffMin / 60);
-    timeLabel = isRu ? `${h} ч. назад` : `${h}h ago`;
-  } else {
-    timeLabel = new Date(boost.createdAt).toLocaleDateString(isRu ? "ru-RU" : "en-US", { day: "numeric", month: "short" });
-  }
-
-  return (
-    <div
-      onClick={onClick}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      style={{
-        background: hov ? "#1c1c1c" : "#171717",
-        border: `1px solid ${hov ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.07)"}`,
-        borderRadius: 16, padding: "18px 22px",
-        cursor: "pointer", transition: "all 0.15s",
-        display: "flex", alignItems: "center", gap: 18,
-      }}
-    >
-      {/* Game badge */}
-      <div style={{
-        width: 50, height: 50, borderRadius: 13, flexShrink: 0,
-        background: col.bg,
-        display: "flex", alignItems: "center", justifyContent: "center",
-      }}>
-        {boost.game === "Valorant" ? (
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M4 18L12 4l8 14H4z" fill={col.text} opacity="0.9"/>
-          </svg>
-        ) : boost.game === "CS2" ? (
-          <span style={{ fontSize: 12, fontWeight: 800, color: col.text, fontFamily: "var(--app-font-sans)", letterSpacing: "-0.02em" }}>CS2</span>
-        ) : (
-          <span style={{ fontSize: 11, fontWeight: 800, color: col.text, fontFamily: "var(--app-font-sans)" }}>D2</span>
-        )}
-      </div>
-
-      {/* Main info */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5, flexWrap: "wrap" }}>
-          <span style={{ fontWeight: 700, fontSize: 15, color: "#f0f0ee" }}>
-            {boost.authorName}
-          </span>
-          <span style={{
-            fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 20,
-            background: col.bg, color: col.text, flexShrink: 0,
-          }}>
-            {boost.game}
-          </span>
-        </div>
-        {/* Elo arrow */}
-        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
-          <span style={{ color: "rgba(240,240,238,0.45)", fontVariantNumeric: "tabular-nums" }}>{boost.currentElo}</span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,238,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-          </svg>
-          <span style={{ color: col.text, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{boost.desiredElo}</span>
-        </div>
-      </div>
-
-      {/* Right: budget + time */}
-      <div style={{ textAlign: "right", flexShrink: 0 }}>
-        <div style={{ fontSize: 18, fontWeight: 700, color: "#f0f0ee", fontVariantNumeric: "tabular-nums", marginBottom: 3 }}>
-          ${Number(boost.budget).toFixed(2)}
-        </div>
-        <div style={{ fontSize: 11, color: "rgba(240,240,238,0.28)" }}>{timeLabel}</div>
-      </div>
-
-      {/* Chevron */}
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,238,0.2)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-        <polyline points="9 18 15 12 9 6"/>
-      </svg>
-    </div>
+    </div>,
+    document.body
   );
 }
 
-/* ── Boosts page ────────────────────────────────── */
+/* ── Page ─────────────────────────────────────────── */
 export default function Boosts() {
   const { user } = useAuth();
   const { lang } = useLang();
@@ -505,29 +475,30 @@ export default function Boosts() {
   const isRu = lang === "ru";
 
   const [boosts, setBoosts] = useState<Boost[]>(loadBoosts);
+  const [tab, setTab] = useState<"latest" | "popular">("latest");
+  const [activeGame, setActiveGame] = useState<string | null>(null);
+  const [showFilter, setShowFilter] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [search, setSearch] = useState(SearchContext.value);
 
-  useEffect(() => {
-    if (!user) navigate("/login");
-  }, [user]);
+  useEffect(() => { if (!user) navigate("/login"); }, [user]);
+  useEffect(() => SearchContext.subscribe(v => setSearch(v)), []);
 
-  useEffect(() => {
-    return SearchContext.subscribe(v => setSearch(v));
-  }, []);
-
-  const filtered = search.trim()
-    ? boosts.filter(b => {
-        const q = search.toLowerCase();
-        return (
-          b.game.toLowerCase().includes(q) ||
-          b.currentElo.toLowerCase().includes(q) ||
-          b.desiredElo.toLowerCase().includes(q) ||
-          b.authorName.toLowerCase().includes(q) ||
-          b.description.toLowerCase().includes(q)
-        );
-      })
-    : boosts;
+  let list = [...boosts];
+  if (activeGame) list = list.filter(b => b.game === activeGame);
+  if (search.trim()) {
+    const q = search.toLowerCase();
+    list = list.filter(b =>
+      b.game.toLowerCase().includes(q) ||
+      b.currentElo.toLowerCase().includes(q) ||
+      b.desiredElo.toLowerCase().includes(q) ||
+      b.authorName.toLowerCase().includes(q) ||
+      b.description.toLowerCase().includes(q)
+    );
+  }
+  list = tab === "popular"
+    ? list.sort((a, b) => Number(b.budget) - Number(a.budget))
+    : list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   if (!user) return null;
 
@@ -535,93 +506,126 @@ export default function Boosts() {
     <div style={{ minHeight: "100dvh", background: "#111111", fontFamily: "var(--app-font-sans)" }}>
       <Navbar />
 
-      <div style={{ maxWidth: 780, margin: "0 auto", padding: "40px 24px" }}>
+      {/* ── Content ── */}
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 20px 40px" }}>
 
-        {/* Page header */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28, flexWrap: "wrap", gap: 16 }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: 26, fontWeight: 700, color: "#f0f0ee", letterSpacing: "-0.025em" }}>
-              {isRu ? "Заявки на буст" : "Boost Requests"}
-            </h1>
-            <p style={{ margin: "6px 0 0", fontSize: 14, color: "rgba(240,240,238,0.4)" }}>
-              {search
-                ? (isRu ? `${filtered.length} по запросу «${search}»` : `${filtered.length} results for "${search}"`)
-                : (isRu ? `${filtered.length} активных заявок` : `${filtered.length} active requests`)}
-            </p>
+        {/* ── Tab bar — exactly like Mobbin ── */}
+        <div style={{
+          display: "flex", alignItems: "stretch",
+          borderBottom: "1px solid rgba(255,255,255,0.07)",
+          marginBottom: 20,
+        }}>
+          {/* Tabs left */}
+          <div style={{ display: "flex", gap: 20, flex: 1 }}>
+            {(["latest", "popular"] as const).map(t => {
+              const active = tab === t;
+              const label = t === "latest" ? (isRu ? "Свежие" : "Latest") : (isRu ? "Популярные" : "Most popular");
+              return (
+                <button key={t} onClick={() => setTab(t)} style={{
+                  background: "none", border: "none", cursor: "pointer", padding: "14px 0",
+                  fontFamily: "var(--app-font-sans)", fontSize: 14,
+                  fontWeight: active ? 500 : 400,
+                  color: active ? "#f0f0ee" : "rgba(240,240,238,0.4)",
+                  position: "relative", transition: "color 0.15s",
+                }}>
+                  {label}
+                  {active && (
+                    <div style={{
+                      position: "absolute", bottom: -1, left: 0, right: 0,
+                      height: 1.5, background: "#f0f0ee", borderRadius: 99,
+                    }} />
+                  )}
+                </button>
+              );
+            })}
           </div>
-          <button
-            onClick={() => setShowCreate(true)}
-            style={{
-              height: 44, padding: "0 22px", borderRadius: 12,
+
+          {/* Controls right */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {/* Filter */}
+            <div style={{ position: "relative" }}>
+              <button onClick={() => setShowFilter(v => !v)} style={{
+                height: 34, padding: "0 13px", borderRadius: 8,
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                cursor: "pointer", color: activeGame ? "#f0f0ee" : "rgba(240,240,238,0.55)",
+                fontFamily: "var(--app-font-sans)", fontSize: 13, fontWeight: 400,
+                display: "flex", alignItems: "center", gap: 6,
+                transition: "background 0.12s",
+              }}
+                onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.09)")}
+                onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
+              >
+                {/* Filter icon — two sliders like Mobbin */}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="9" cy="6" r="2"/><line x1="2" y1="6" x2="7" y2="6"/><line x1="11" y1="6" x2="22" y2="6"/>
+                  <circle cx="15" cy="12" r="2"/><line x1="2" y1="12" x2="13" y2="12"/><line x1="17" y1="12" x2="22" y2="12"/>
+                  <circle cx="9" cy="18" r="2"/><line x1="2" y1="18" x2="7" y2="18"/><line x1="11" y1="18" x2="22" y2="18"/>
+                </svg>
+                {isRu ? "Фильтр" : "Filter"}
+                {activeGame && (
+                  <span style={{ background: GAME_COLORS[activeGame].dim, color: GAME_COLORS[activeGame].accent, borderRadius: 20, padding: "1px 6px", fontSize: 10, fontWeight: 700 }}>
+                    {activeGame}
+                  </span>
+                )}
+              </button>
+              {showFilter && <FilterDropdown activeGame={activeGame} onSelect={setActiveGame} onClose={() => setShowFilter(false)} />}
+            </div>
+
+            {/* New request */}
+            <button onClick={() => setShowCreate(true)} style={{
+              height: 34, padding: "0 14px", borderRadius: 8,
               background: "#f0f0ee", border: "none", cursor: "pointer",
-              color: "#111", fontFamily: "var(--app-font-sans)", fontWeight: 700, fontSize: 14,
-              display: "flex", alignItems: "center", gap: 8,
-              transition: "opacity 0.15s", flexShrink: 0,
+              color: "#111", fontFamily: "var(--app-font-sans)", fontWeight: 600, fontSize: 13,
+              display: "flex", alignItems: "center", gap: 6, transition: "opacity 0.12s",
             }}
-            onMouseEnter={e => (e.currentTarget.style.opacity = "0.88")}
-            onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            {isRu ? "Создать заявку" : "New Request"}
-          </button>
+              onMouseEnter={e => (e.currentTarget.style.opacity = "0.88")}
+              onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              {isRu ? "Новая заявка" : "New Request"}
+            </button>
+          </div>
         </div>
 
-        {/* Active search chip */}
+        {/* active search chip */}
         {search && (
-          <div style={{ marginBottom: 18, display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 13, color: "rgba(240,240,238,0.35)" }}>
-              {isRu ? "Фильтр:" : "Filter:"}
-            </span>
-            <span style={{
-              display: "flex", alignItems: "center", gap: 6,
-              background: "rgba(255,255,255,0.08)", borderRadius: 20,
-              padding: "4px 12px", fontSize: 13, color: "#f0f0ee",
-            }}>
-              {search}
-              <button onClick={() => { setSearch(""); SearchContext.emit(""); }} style={{
-                background: "none", border: "none", cursor: "pointer", padding: 0,
-                color: "rgba(240,240,238,0.45)", display: "flex",
-              }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
-                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                </svg>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+            <span style={{ fontSize: 12, color: "rgba(240,240,238,0.3)" }}>{isRu ? `${list.length} по запросу` : `${list.length} for`}</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(255,255,255,0.07)", borderRadius: 20, padding: "3px 10px 3px 12px", fontSize: 12, color: "rgba(240,240,238,0.6)" }}>
+              «{search}»
+              <button onClick={() => { setSearch(""); SearchContext.emit(""); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, color: "rgba(240,240,238,0.4)", display: "flex" }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             </span>
           </div>
         )}
 
-        {/* List */}
-        {filtered.length === 0 ? (
-          <div style={{
-            textAlign: "center", padding: "80px 24px",
-            background: "rgba(255,255,255,0.02)",
-            border: "1px solid rgba(255,255,255,0.06)",
-            borderRadius: 20,
-          }}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>{search ? "🔍" : "🎮"}</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: "#f0f0ee", marginBottom: 8 }}>
-              {search ? (isRu ? "Ничего не найдено" : "No results") : (isRu ? "Заявок пока нет" : "No requests yet")}
+        {/* ── Grid ── */}
+        {list.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "100px 24px", borderRadius: 16, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+            <div style={{ fontSize: 40, marginBottom: 14 }}>{search || activeGame ? "🔍" : "🎮"}</div>
+            <div style={{ fontSize: 17, fontWeight: 600, color: "#f0f0ee", marginBottom: 8 }}>
+              {search || activeGame ? (isRu ? "Ничего не найдено" : "No results") : (isRu ? "Заявок пока нет" : "No requests yet")}
             </div>
-            <div style={{ fontSize: 14, color: "rgba(240,240,238,0.4)", marginBottom: 24 }}>
-              {search
-                ? (isRu ? "Попробуйте другой запрос" : "Try a different search")
-                : (isRu ? "Создайте первую заявку на буст" : "Post your first boost request")}
+            <div style={{ fontSize: 13, color: "rgba(240,240,238,0.35)", marginBottom: 22 }}>
+              {(search || activeGame) ? (isRu ? "Попробуйте другой запрос или сбросьте фильтр" : "Try a different search or clear filters") : (isRu ? "Создайте первую заявку" : "Post your first boost request")}
             </div>
-            {!search && (
-              <button onClick={() => setShowCreate(true)} style={{
-                height: 42, padding: "0 20px", borderRadius: 10,
-                background: "#f0f0ee", border: "none", cursor: "pointer",
-                color: "#111", fontFamily: "var(--app-font-sans)", fontWeight: 600, fontSize: 14,
-              }}>
+            {!search && !activeGame && (
+              <button onClick={() => setShowCreate(true)} style={{ height: 38, padding: "0 18px", borderRadius: 9, background: "#f0f0ee", border: "none", cursor: "pointer", color: "#111", fontFamily: "var(--app-font-sans)", fontWeight: 600, fontSize: 13 }}>
                 {isRu ? "Создать заявку" : "Post request"}
               </button>
             )}
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {filtered.map(b => (
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+            gap: 12,
+          }}>
+            {list.map(b => (
               <BoostCard key={b.id} boost={b} onClick={() => navigate(`/boosts/${b.id}`)} />
             ))}
           </div>
@@ -629,10 +633,7 @@ export default function Boosts() {
       </div>
 
       {showCreate && (
-        <CreateBoostModal
-          onClose={() => setShowCreate(false)}
-          onCreated={b => setBoosts(prev => [b, ...prev])}
-        />
+        <CreateBoostModal onClose={() => setShowCreate(false)} onCreated={b => setBoosts(prev => [b, ...prev])} />
       )}
     </div>
   );
