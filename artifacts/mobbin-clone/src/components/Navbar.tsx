@@ -43,7 +43,7 @@ function LangToggle() {
   return (
     <div style={{
       display: "flex",
-      background: "rgba(0,0,0,0.06)",
+      background: "var(--bg-tertiary)",
       borderRadius: 9999,
       padding: 3,
       gap: 2,
@@ -62,7 +62,7 @@ function LangToggle() {
             fontWeight: 600,
             fontSize: 12,
             transition: "all 0.18s",
-            background: lang === l ? "#ffffff" : "transparent",
+            background: lang === l ? "var(--bg-primary)" : "transparent",
             color: lang === l ? "var(--text-primary)" : "var(--text-tertiary)",
             boxShadow: lang === l ? "0 1px 3px rgba(0,0,0,0.12)" : "none",
           }}
@@ -83,13 +83,13 @@ function ThemeToggle() {
       style={{
         width: 32, height: 32, borderRadius: 9999,
         border: "none", cursor: "pointer",
-        background: "rgba(0,0,0,0.06)",
+        background: "var(--bg-tertiary)",
         display: "flex", alignItems: "center", justifyContent: "center",
         flexShrink: 0, transition: "background 0.15s",
         color: "var(--text-primary)",
       }}
-      onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,0,0,0.12)")}
-      onMouseLeave={e => (e.currentTarget.style.background = "rgba(0,0,0,0.06)")}
+      onMouseEnter={e => (e.currentTarget.style.background = "var(--border-secondary)")}
+      onMouseLeave={e => (e.currentTarget.style.background = "var(--bg-tertiary)")}
     >
       {theme === "light" ? (
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -135,10 +135,10 @@ export default function Navbar() {
           height: 60,
           padding: "8px 20px",
           borderRadius: 9999,
-          background: "rgba(242,242,240,0.92)",
+          background: "var(--bg-glass-nav)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          boxShadow: "0 0 0 1px rgba(0,0,0,0.06), 0 2px 12px rgba(0,0,0,0.07)",
+          boxShadow: "0 0 0 1px var(--border-primary), 0 2px 12px rgba(0,0,0,0.10)",
           width: "min(580px, calc(100vw - 40px))",
         }}
       >
@@ -168,8 +168,8 @@ export default function Navbar() {
         className="md:hidden"
         style={{
           position: "absolute", top: 0, left: 0, right: 0, zIndex: 50,
-          background: "rgba(242,242,240,0.95)", backdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(0,0,0,0.06)",
+          background: "var(--bg-glass-nav)", backdropFilter: "blur(20px)",
+          borderBottom: "1px solid var(--border-primary)",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px", height: 56 }}>
