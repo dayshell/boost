@@ -4,28 +4,25 @@ import { translations } from "../i18n";
 
 const gameLogos = [
   {
-    src: "/games/cs2.jpg",
+    src: "/games/cs2_new.png",
     alt: "CS2",
     label: "CS2",
-    accent: "#f0c040",
-    fallbackBg: "#1b2838",
-    objectPosition: "top center",
+    accent: "#f0a030",
+    fallbackBg: "#1a2540",
   },
   {
-    src: "/games/valorant.png",
+    src: "/games/valorant_new.png",
     alt: "Valorant",
     label: "VALORANT",
     accent: "#ff4655",
     fallbackBg: "#0f1923",
-    objectPosition: "top center",
   },
   {
-    src: "/games/dota2.jpg",
+    src: "/games/dota2_new.png",
     alt: "Dota 2",
     label: "DOTA 2",
     accent: "#c23c2a",
-    fallbackBg: "#0e0b0b",
-    objectPosition: "top center",
+    fallbackBg: "#ffffff",
   },
 ];
 
@@ -70,7 +67,7 @@ function GameLogoStack() {
                 width: "100%",
                 height: "100%",
                 objectFit: "cover",
-                objectPosition: logo.objectPosition,
+                objectPosition: "center",
                 display: "block",
               }}
             />
@@ -85,12 +82,13 @@ function GameBadge({ game }: { game: typeof gameLogos[0] }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
       <div style={{
-        width: 22,
-        height: 22,
+        width: 24,
+        height: 24,
         borderRadius: 7,
         background: game.fallbackBg,
         overflow: "hidden",
         flexShrink: 0,
+        boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
       }}>
         <img
           src={game.src}
@@ -99,7 +97,7 @@ function GameBadge({ game }: { game: typeof gameLogos[0] }) {
             width: "100%",
             height: "100%",
             objectFit: "cover",
-            objectPosition: "top center",
+            objectPosition: "center",
             display: "block",
           }}
         />
@@ -154,7 +152,7 @@ export default function Hero() {
 
         <div>
           <p className="text-compact text-secondary" style={{ marginBottom: 20 }}>{tr.trustedBy}</p>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 24, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 20, flexWrap: "wrap" }}>
             {gameLogos.map(g => <GameBadge key={g.alt} game={g} />)}
             <div style={{ width: 1, height: 18, background: "var(--border-secondary)", margin: "0 4px" }} />
             <span className="text-body-bold" style={{ fontSize: 13, color: "var(--text-tertiary)" }}>
