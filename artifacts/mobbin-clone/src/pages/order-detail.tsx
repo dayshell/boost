@@ -41,6 +41,7 @@ export default function BoostDetail() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
   const isRu = lang === "ru";
+  const USD_TO_RUB = 90;
   const [boost, setBoost] = useState<Boost | null>(null);
 
   useEffect(() => {
@@ -149,9 +150,9 @@ export default function BoostDetail() {
             {/* Budget */}
             <div style={{ textAlign: "right", flexShrink: 0 }}>
               <div style={{ fontSize: 30, fontWeight: 700, color: "#f0f0ee", letterSpacing: "-0.03em", fontVariantNumeric: "tabular-nums" }}>
-                ${Number(boost.budget).toFixed(2)}
+                {isRu ? `₽${Math.round(Number(boost.budget) * USD_TO_RUB).toLocaleString("ru-RU")}` : `$${Number(boost.budget).toFixed(2)}`}
               </div>
-              <div style={{ fontSize: 12, color: "rgba(240,240,238,0.28)", marginTop: 2 }}>USD</div>
+              <div style={{ fontSize: 12, color: "rgba(240,240,238,0.28)", marginTop: 2 }}>{isRu ? "RUB" : "USD"}</div>
             </div>
           </div>
 

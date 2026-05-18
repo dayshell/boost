@@ -265,8 +265,8 @@ function RangeSlider({ min, max, value, onChange, isDark, accentColor }: {
 /* ── Filter panel (dropdown) ─────────────────────── */
 interface FilterState {
   budgetRange: [number, number];
-  rankFrom: string;
-  rankTo: string;
+  rankFrom: string[];
+  rankTo: string[];
   filterGame: string;
 }
 
@@ -301,8 +301,8 @@ function FilterPanel({ onClose, filters, setFilters, isDark, isRu }: {
   const lbl: React.CSSProperties = { fontSize: 10, fontWeight: 700, color: textMuted, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 10, display: "block" };
 
   function apply() { setFilters(local); onClose(); }
-  function reset() { setLocal({ budgetRange: [0, MAX_BUDGET], rankFrom: "", rankTo: "", filterGame: "all" }); }
-  const dirty = local.budgetRange[0] > 0 || local.budgetRange[1] < MAX_BUDGET || !!local.rankFrom || !!local.rankTo || local.filterGame !== "all";
+  function reset() { setLocal({ budgetRange: [0, MAX_BUDGET], rankFrom: [], rankTo: [], filterGame: "all" }); }
+  const dirty = local.budgetRange[0] > 0 || local.budgetRange[1] < MAX_BUDGET || local.rankFrom.length > 0 || local.rankTo.length > 0 || local.filterGame !== "all";
 
   return (
     <div ref={panelRef} style={{
@@ -375,9 +375,9 @@ function FilterPanel({ onClose, filters, setFilters, isDark, isRu }: {
           <span style={lbl as React.CSSProperties}>{isRu ? "Текущий ранг" : "Current rank"}</span>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 5, maxHeight: 120, overflowY: "auto" }}>
             {rankList.map(rank => {
-              const active = local.rankFrom === rank;
+              const active = local.rankFrom.includes(rank);
               return (
-                <button key={rank} onClick={() => setLocal(p => ({ ...p, rankFrom: p.rankFrom === rank ? "" : rank }))}
+                <button key={rank} onClick={() => setLocal(p => ({ ...p, rankFrom: p.rankFrom.includes(rank) ? p.rankFrom.filter(r => r !== rank) : [...p.rankFrom, rank] }))}
                   style={{
                     padding: "4px 10px", borderRadius: 20, border: "none", cursor: "pointer",
                     background: active ? accent : chipBg,
@@ -398,9 +398,9 @@ function FilterPanel({ onClose, filters, setFilters, isDark, isRu }: {
           <span style={lbl as React.CSSProperties}>{isRu ? "Желаемый ранг" : "Target rank"}</span>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 5, maxHeight: 120, overflowY: "auto" }}>
             {rankList.map(rank => {
-              const active = local.rankTo === rank;
+              const active = local.rankTo.includes(rank);
               return (
-                <button key={rank} onClick={() => setLocal(p => ({ ...p, rankTo: p.rankTo === rank ? "" : rank }))}
+                <button key={rank} onClick={() => setLocal(p => ({ ...p, rankTo: p.rankTo.includes(rank) ? p.rankTo.filter(r => r !== rank) : [...p.rankTo, rank] }))}
                   style={{
                     padding: "4px 10px", borderRadius: 20, border: "none", cursor: "pointer",
                     background: active ? accent : chipBg,
@@ -580,7 +580,7 @@ const GAME_TABS: { id: GameFilter; label: string }[] = [
 ];
 
 /* ── Page ─────────────────────────────────────────── */
-const DEFAULT_FILTERS: FilterState = { budgetRange: [0, MAX_BUDGET], rankFrom: "", rankTo: "", filterGame: "all" };
+const DEFAULT_FILTERS: FilterState = { budgetRange: [0, MAX_BUDGET], rankFrom: [], rankTo: [], filterGame: "all" };
 
 export default function Boosts() {
   const { user } = useAuth();
@@ -601,7 +601,7 @@ export default function Boosts() {
   useEffect(() => { if (!user) navigate("/login"); }, [user]);
   useEffect(() => SearchContext.subscribe(v => setSearch(v)), []);
 
-  const hasActiveFilters = filters.budgetRange[0] > 0 || filters.budgetRange[1] < MAX_BUDGET || !!filters.rankFrom || !!filters.rankTo || filters.filterGame !== "all";
+  const hasActiveFilters = filters.budgetRange[0] > 0 || filters.budgetRange[1] < MAX_BUDGET || filters.rankFrom.length > 0 || filters.rankTo.length > 0 || filters.filterGame !== "all";
 
   let list = [...boosts];
   if (gameFilter !== "all") list = list.filter(b => b.game === gameFilter);
@@ -622,8 +622,8 @@ export default function Boosts() {
       return n >= filters.budgetRange[0] && (filters.budgetRange[1] >= MAX_BUDGET || n <= filters.budgetRange[1]);
     });
   }
-  if (filters.rankFrom) list = list.filter(b => b.currentElo === filters.rankFrom);
-  if (filters.rankTo) list = list.filter(b => b.desiredElo === filters.rankTo);
+  if (filters.rankFrom.length > 0) list = list.filter(b => filters.rankFrom.includes(b.currentElo));
+  if (filters.rankTo.length > 0) list = list.filter(b => filters.rankTo.includes(b.desiredElo));
   list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   if (!user) return null;
@@ -736,7 +736,7 @@ export default function Boosts() {
             {filters.filterGame !== "all" && (
               <span style={{ display: "flex", alignItems: "center", gap: 5, background: GAME_COLORS[filters.filterGame]?.dim ?? (isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)"), borderRadius: 20, padding: "3px 10px 3px 12px", fontSize: 12, color: GAME_COLORS[filters.filterGame]?.accent ?? textPrimary, fontWeight: 600 }}>
                 {filters.filterGame}
-                <button onClick={() => setFilters(p => ({ ...p, filterGame: "all", rankFrom: "", rankTo: "" }))} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, color: "inherit", display: "flex", opacity: 0.7 }}>
+                <button onClick={() => setFilters(p => ({ ...p, filterGame: "all", rankFrom: [], rankTo: [] }))} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, color: "inherit", display: "flex", opacity: 0.7 }}>
                   <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
               </span>
@@ -757,18 +757,18 @@ export default function Boosts() {
                 </button>
               </span>
             )}
-            {filters.rankFrom && (
+            {filters.rankFrom.length > 0 && (
               <span style={{ display: "flex", alignItems: "center", gap: 5, background: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)", borderRadius: 20, padding: "3px 10px 3px 12px", fontSize: 12, color: textPrimary }}>
-                {isRu ? "От:" : "From:"} {filters.rankFrom}
-                <button onClick={() => setFilters(p => ({ ...p, rankFrom: "" }))} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, color: textMuted, display: "flex" }}>
+                {isRu ? "От:" : "From:"} {filters.rankFrom.length === 1 ? filters.rankFrom[0] : `${filters.rankFrom.length} ${isRu ? "рангов" : "ranks"}`}
+                <button onClick={() => setFilters(p => ({ ...p, rankFrom: [] }))} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, color: textMuted, display: "flex" }}>
                   <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
               </span>
             )}
-            {filters.rankTo && (
+            {filters.rankTo.length > 0 && (
               <span style={{ display: "flex", alignItems: "center", gap: 5, background: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)", borderRadius: 20, padding: "3px 10px 3px 12px", fontSize: 12, color: textPrimary }}>
-                {isRu ? "До:" : "To:"} {filters.rankTo}
-                <button onClick={() => setFilters(p => ({ ...p, rankTo: "" }))} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, color: textMuted, display: "flex" }}>
+                {isRu ? "До:" : "To:"} {filters.rankTo.length === 1 ? filters.rankTo[0] : `${filters.rankTo.length} ${isRu ? "рангов" : "ranks"}`}
+                <button onClick={() => setFilters(p => ({ ...p, rankTo: [] }))} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, color: textMuted, display: "flex" }}>
                   <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
               </span>
@@ -805,7 +805,7 @@ export default function Boosts() {
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20 }}>
             {list.map(b => (
-              <BoostCard key={b.id} boost={b} isDark={isDark} onClick={() => navigate(`/boosts/${b.id}`)}/>
+              <BoostCard key={b.id} boost={b} isDark={isDark} isRu={isRu} onClick={() => navigate(`/boosts/${b.id}`)}/>
             ))}
           </div>
         )}

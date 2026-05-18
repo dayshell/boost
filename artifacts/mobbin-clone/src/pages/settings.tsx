@@ -212,12 +212,19 @@ function DepositRow({ deposit, isRu }: { deposit: Deposit; isRu: boolean }) {
   );
 }
 
+const USD_TO_RUB = 90;
+
 export default function Settings() {
   const { user, logout } = useAuth();
   const { lang } = useLang();
   const [, navigate] = useLocation();
   const [section, setSection] = useState<Section>("account");
   const isRu = lang === "ru";
+  const [balance, setBalance] = useState<number>(() => {
+    try { return parseFloat(localStorage.getItem("boost_balance") ?? "0") || 0; } catch { return 0; }
+  });
+  const [showTopUp, setShowTopUp] = useState(false);
+  const [topUpAmount, setTopUpAmount] = useState("");
 
   if (!user) {
     navigate("/login");
@@ -297,6 +304,49 @@ export default function Settings() {
               </h2>
               <SettingRow label={isRu ? "Имя" : "Name"} value={user.name} action actionLabel={isRu ? "Изменить" : "Edit"} />
               <SettingRow label={isRu ? "Email адрес" : "Email address"} value={user.email} action actionLabel={isRu ? "Изменить" : "Edit"} />
+
+              {/* Balance row */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 0", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: 14, color: "#f0f0ee", marginBottom: 4 }}>{isRu ? "Баланс" : "Balance"}</div>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: "#f0f0ee", fontVariantNumeric: "tabular-nums" }}>
+                    {isRu ? `₽${Math.round(balance * USD_TO_RUB).toLocaleString("ru-RU")}` : `$${balance.toFixed(2)}`}
+                  </div>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
+                  <button
+                    onClick={() => setShowTopUp(v => !v)}
+                    style={{ height: 36, padding: "0 16px", borderRadius: 9, border: "none", cursor: "pointer", background: "#f0f0ee", color: "#111", fontFamily: "var(--app-font-sans)", fontWeight: 700, fontSize: 13 }}
+                  >
+                    {isRu ? "Пополнить" : "Top up"}
+                  </button>
+                  {showTopUp && (
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <input
+                        type="number" min="1" placeholder={isRu ? "Сумма $" : "Amount $"}
+                        value={topUpAmount}
+                        onChange={e => setTopUpAmount(e.target.value)}
+                        style={{ width: 100, height: 34, padding: "0 10px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.06)", color: "#f0f0ee", fontFamily: "var(--app-font-sans)", fontSize: 13, outline: "none" }}
+                      />
+                      <button
+                        onClick={() => {
+                          const amt = parseFloat(topUpAmount);
+                          if (!amt || amt <= 0) return;
+                          const nb = balance + amt;
+                          setBalance(nb);
+                          localStorage.setItem("boost_balance", String(nb));
+                          setTopUpAmount("");
+                          setShowTopUp(false);
+                        }}
+                        style={{ height: 34, padding: "0 14px", borderRadius: 8, border: "none", cursor: "pointer", background: "#4ade80", color: "#111", fontFamily: "var(--app-font-sans)", fontWeight: 700, fontSize: 13 }}
+                      >
+                        OK
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <SettingRow label={isRu ? "Пароль" : "Password"} value={isRu ? "Пароль не задан" : "No password yet"} action actionLabel={isRu ? "Создать" : "Create new"} />
             </section>
 
