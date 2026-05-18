@@ -5,6 +5,7 @@ import { useAuth } from "../AuthContext";
 import { useTheme } from "../ThemeContext";
 import Navbar from "../components/Navbar";
 import type { Boost } from "./orders";
+import { CreateBoostModal, saveBoosts } from "./orders";
 
 function loadBoosts(): Boost[] {
   try {
@@ -61,7 +62,7 @@ function MiniPreview({ boost }: { boost: Boost }) {
         {boost.desiredElo.length > 10 ? boost.desiredElo.slice(0, 10) : boost.desiredElo}
       </text>
       <rect x="208" y="42" width="60" height="34" rx="6" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.09)" strokeWidth="0.5"/>
-      <text x="238" y="55" textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize="5.5" fontFamily="Arial">BUDGET</text>
+      <text x="238" y="55" textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize="5.5" fontFamily="Arial">ОПЛАТА</text>
       <text x="238" y="69" textAnchor="middle" fill="#f0f0ee" fontSize="12" fontWeight="700" fontFamily="Arial">${Number(boost.budget).toFixed(0)}</text>
       <rect x="12" y="138" width="256" height="7" rx="2.5" fill="rgba(255,255,255,0.06)"/>
       <rect x="12" y="151" width="190" height="6" rx="2" fill="rgba(255,255,255,0.04)"/>
@@ -159,6 +160,12 @@ export default function BoostDetail() {
   const [allBoosts, setAllBoosts] = useState<Boost[]>([]);
   const [saved, setSaved] = useState(false);
   const [activeTab, setActiveTab] = useState<"screens" | "flows">("screens");
+  const [showEdit, setShowEdit] = useState(false);
+  const [accepted, setAccepted] = useState<boolean>(() => {
+    try { return JSON.parse(localStorage.getItem("boost_accepted") ?? "[]").includes(id); } catch { return false; }
+  });
+
+  const isAdmin = user?.email === "admin@boost.com";
 
   useEffect(() => {
     if (!user) { navigate("/login"); return; }
@@ -166,6 +173,15 @@ export default function BoostDetail() {
     setAllBoosts(all);
     setBoost(all.find(b => b.id === id) ?? null);
   }, [id, user]);
+
+  function handleAccept() {
+    try {
+      const list: string[] = JSON.parse(localStorage.getItem("boost_accepted") ?? "[]");
+      if (!list.includes(id!)) list.push(id!);
+      localStorage.setItem("boost_accepted", JSON.stringify(list));
+    } catch {}
+    setAccepted(true);
+  }
 
   if (!user) return null;
 
@@ -257,37 +273,71 @@ export default function BoostDetail() {
               }}>
                 {boost.game}
               </span>
-              <span style={{ fontSize: 13, color: textMuted, fontFamily: "var(--app-font-sans)" }}>
-                {isRu
-                  ? `Свяжитесь с бустером для получения заявки — `
-                  : `Contact the booster to take this request — `}
-                <span style={{ color: col.accent, fontWeight: 600 }}>{boost.contact}</span>
-              </span>
+              {isAdmin ? (
+                <span style={{ fontSize: 13, color: textMuted, fontFamily: "var(--app-font-sans)" }}>
+                  {isRu ? "Контакт заказчика: " : "Customer contact: "}
+                  <span style={{ color: col.accent, fontWeight: 600 }}>{boost.contact}</span>
+                </span>
+              ) : (
+                <span style={{ fontSize: 13, color: textMuted, fontFamily: "var(--app-font-sans)" }}>
+                  {isRu ? "Заявка активна — бустер свяжется с вами." : "Request is active — a booster will contact you."}
+                </span>
+              )}
             </div>
-            <button
-              onClick={() => {
-                const c = boost.contact;
-                const url = c.startsWith("http") ? c : c.startsWith("@") ? `https://t.me/${c.slice(1)}` : undefined;
-                if (url) window.open(url, "_blank");
-              }}
-              style={{
-                height: 30, padding: "0 14px", borderRadius: 7, border: "none", cursor: "pointer",
-                background: col.accent, color: "#111",
-                fontFamily: "var(--app-font-sans)", fontWeight: 700, fontSize: 12,
-                flexShrink: 0, transition: "opacity 0.12s",
-              }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
-              onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
-            >
-              {isRu ? "Написать" : "Contact"}
-            </button>
+            <div style={{ display: "flex", gap: 7, flexShrink: 0 }}>
+              {isAdmin && (
+                <>
+                  {!accepted ? (
+                    <button
+                      onClick={handleAccept}
+                      style={{
+                        height: 30, padding: "0 14px", borderRadius: 7, border: "none", cursor: "pointer",
+                        background: "#4ade80", color: "#111",
+                        fontFamily: "var(--app-font-sans)", fontWeight: 700, fontSize: 12,
+                        transition: "opacity 0.12s",
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
+                      onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+                    >
+                      {isRu ? "Принять заказ" : "Accept Order"}
+                    </button>
+                  ) : (
+                    <span style={{
+                      height: 30, padding: "0 14px", borderRadius: 7,
+                      background: "rgba(74,222,128,0.12)", border: "1px solid rgba(74,222,128,0.3)",
+                      color: "#4ade80", fontFamily: "var(--app-font-sans)", fontWeight: 700, fontSize: 12,
+                      display: "flex", alignItems: "center",
+                    }}>
+                      ✓ {isRu ? "Принято" : "Accepted"}
+                    </span>
+                  )}
+                  <button
+                    onClick={() => {
+                      const c = boost.contact;
+                      const url = c.startsWith("http") ? c : c.startsWith("@") ? `https://t.me/${c.slice(1)}` : undefined;
+                      if (url) window.open(url, "_blank");
+                    }}
+                    style={{
+                      height: 30, padding: "0 14px", borderRadius: 7, border: "none", cursor: "pointer",
+                      background: col.accent, color: "#111",
+                      fontFamily: "var(--app-font-sans)", fontWeight: 700, fontSize: 12,
+                      transition: "opacity 0.12s",
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
+                    onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+                  >
+                    {isRu ? "Написать" : "Contact"}
+                  </button>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Metadata row */}
           <div style={{ display: "flex", gap: 28, marginBottom: 16, flexWrap: "wrap" }}>
             {[
               { label: isRu ? "Игра" : "Game",      value: boost.game },
-              { label: isRu ? "Бюджет" : "Budget",  value: budgetDisplay },
+              { label: isRu ? "Сумма" : "Amount",  value: budgetDisplay },
               { label: isRu ? "Текущий" : "Current", value: boost.currentElo },
               { label: isRu ? "Цель" : "Target",    value: boost.desiredElo },
               { label: isRu ? "Дата" : "Posted",    value: createdDate },
@@ -317,6 +367,26 @@ export default function BoostDetail() {
               </svg>
               {isRu ? "Сохранить" : "Save"}
             </button>
+            {user?.email === boost.authorEmail && (
+              <button
+                onClick={() => setShowEdit(true)}
+                style={{
+                  height: 34, padding: "0 16px", borderRadius: 8,
+                  background: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)",
+                  border: `1px solid ${borderColor}`,
+                  color: textPrimary, cursor: "pointer",
+                  fontFamily: "var(--app-font-sans)", fontWeight: 600, fontSize: 13,
+                  display: "flex", alignItems: "center", gap: 6, transition: "all 0.15s",
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.12)")}
+                onMouseLeave={e => (e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)")}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                {isRu ? "Редактировать" : "Edit"}
+              </button>
+            )}
             <button style={{
               height: 34, width: 34, borderRadius: 8,
               background: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)",
@@ -447,6 +517,15 @@ export default function BoostDetail() {
           </div>
         )}
       </div>
+      {showEdit && (
+        <CreateBoostModal
+          isDark={isDark}
+          initialData={boost}
+          onClose={() => setShowEdit(false)}
+          onCreated={() => {}}
+          onUpdated={updated => setBoost(updated)}
+        />
+      )}
     </div>
   );
 }
@@ -463,7 +542,7 @@ function ScreenCard({ boost, col, isMain = false, isDark, onClick }: {
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
-        borderRadius: 18, overflow: "hidden", cursor: onClick ? "pointer" : "default",
+        borderRadius: 18, overflow: "hidden", cursor: "pointer",
         background: cardBg,
         transform: hov && !isMain ? "translateY(-4px)" : "none",
         transition: "transform 0.18s",

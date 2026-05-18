@@ -134,7 +134,7 @@ function CardPreview({ boost }: { boost: Boost }) {
         {boost.desiredElo.length > 10 ? boost.desiredElo.slice(0, 10) : boost.desiredElo}
       </text>
       <rect x="208" y="38" width="60" height="30" rx="6" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.09)" strokeWidth="0.5"/>
-      <text x="238" y="49" textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize="5.5" fontFamily="Arial">BUDGET</text>
+      <text x="238" y="49" textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize="5.5" fontFamily="Arial">ОПЛАТА</text>
       <text x="238" y="61" textAnchor="middle" fill="#f0f0ee" fontSize="11" fontWeight="700" fontFamily="Arial">${Number(boost.budget).toFixed(0)}</text>
       <rect x="208" y="76" width="60" height="24" rx="5" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.06)" strokeWidth="0.5"/>
       <text x="238" y="86" textAnchor="middle" fill="rgba(255,255,255,0.28)" fontSize="5" fontFamily="Arial">MSK TIME</text>
@@ -549,7 +549,7 @@ function FilterPanel({ onClose, filters, setFilters, isDark, isRu }: {
       {/* Budget slider */}
       <div style={{ marginBottom: 20 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-          <span style={lbl as React.CSSProperties}>{isRu ? "Бюджет" : "Budget"}</span>
+          <span style={lbl as React.CSSProperties}>{isRu ? "Сумма" : "Amount"}</span>
           <span style={{ fontSize: 12, fontWeight: 600, color: textPrimary }}>
             {isRu
               ? `₽${local.budgetRange[0] * USD_TO_RUB} — ${local.budgetRange[1] >= MAX_BUDGET ? `₽${MAX_BUDGET * USD_TO_RUB}+` : `₽${local.budgetRange[1] * USD_TO_RUB}`}`
@@ -631,22 +631,30 @@ function FilterPanel({ onClose, filters, setFilters, isDark, isRu }: {
   );
 }
 
-/* ── Create Boost Modal ─────────────────────────── */
-function CreateBoostModal({ onClose, onCreated, isDark }: { onClose: () => void; onCreated: (b: Boost) => void; isDark: boolean }) {
+/* ── Create / Edit Boost Modal ─────────────────────────── */
+export function CreateBoostModal({ onClose, onCreated, onUpdated, initialData, isDark }: {
+  onClose: () => void;
+  onCreated: (b: Boost) => void;
+  onUpdated?: (b: Boost) => void;
+  initialData?: Boost;
+  isDark: boolean;
+}) {
   const { user } = useAuth();
   const { lang } = useLang();
   const isRu = lang === "ru";
+  const isEdit = !!initialData;
 
-  const [game, setGame] = useState<Boost["game"]>("CS2");
-  const [cs2Mode, setCs2Mode] = useState<CS2Mode>("faceit");
-  const [currentElo, setCurrentElo] = useState("");
-  const [desiredElo, setDesiredElo] = useState("");
-  const [contact, setContact] = useState("");
-  const [description, setDescription] = useState("");
-  const [timeFrom, setTimeFrom] = useState("10:00");
-  const [timeTo, setTimeTo] = useState("22:00");
-  const [budget, setBudget] = useState("");
+  const [game, setGame] = useState<Boost["game"]>(initialData?.game ?? "CS2");
+  const [cs2Mode, setCs2Mode] = useState<CS2Mode>((initialData?.cs2Mode as CS2Mode) ?? "faceit");
+  const [currentElo, setCurrentElo] = useState(initialData?.currentElo ?? "");
+  const [desiredElo, setDesiredElo] = useState(initialData?.desiredElo ?? "");
+  const [contact, setContact] = useState(initialData?.contact ?? "");
+  const [description, setDescription] = useState(initialData?.description ?? "");
+  const [timeFrom, setTimeFrom] = useState(initialData?.timeFrom ?? "10:00");
+  const [timeTo, setTimeTo] = useState(initialData?.timeTo ?? "22:00");
+  const [budget, setBudget] = useState(initialData?.budget ?? "");
   const [errors, setErrors] = useState<Record<string, boolean>>({});
+  const [balanceError, setBalanceError] = useState("");
 
   const modalBg = isDark ? "#161616" : "#ffffff";
   const inputBg = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)";
@@ -693,6 +701,35 @@ function CreateBoostModal({ onClose, onCreated, isDark }: { onClose: () => void;
     if (!contact.trim()) err.contact = true;
     if (!budget.trim()) err.budget = true;
     if (Object.keys(err).length) { setErrors(err); return; }
+
+    const budgetNum = parseFloat(budget.trim());
+    if (!isEdit) {
+      const bal = parseFloat(localStorage.getItem("boost_balance") ?? "0") || 0;
+      if (bal < budgetNum) {
+        setBalanceError(isRu
+          ? `Недостаточно средств. Ваш баланс: $${bal.toFixed(2)}. Пополните баланс или уменьшите сумму.`
+          : `Insufficient balance. Your balance: $${bal.toFixed(2)}. Top up or reduce the amount.`);
+        return;
+      }
+      const newBal = bal - budgetNum;
+      localStorage.setItem("boost_balance", String(newBal));
+    }
+
+    if (isEdit && initialData) {
+      const updated: Boost = {
+        ...initialData,
+        game, cs2Mode: isCS2 ? cs2Mode : undefined,
+        currentElo: currentElo.trim(), desiredElo: desiredElo.trim(),
+        contact: contact.trim(), description: description.trim(),
+        timeFrom, timeTo, budget: budget.trim(),
+      };
+      const all = loadBoosts().map(b => b.id === updated.id ? updated : b);
+      saveBoosts(all);
+      onUpdated?.(updated);
+      onClose();
+      return;
+    }
+
     const boost: Boost = {
       id: Date.now().toString(), authorName: user?.name ?? "User", authorEmail: user?.email ?? "",
       game,
@@ -716,8 +753,10 @@ function CreateBoostModal({ onClose, onCreated, isDark }: { onClose: () => void;
       <div style={{ width: "100%", maxWidth: 520, background: modalBg, border: `1px solid ${dividerColor}`, borderRadius: 18, boxShadow: "0 40px 100px rgba(0,0,0,0.5)", maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 22px 16px", borderBottom: `1px solid ${dividerColor}`, flexShrink: 0 }}>
           <div>
-            <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: textPrimary, letterSpacing: "-0.02em" }}>{isRu ? "Новая заявка" : "New Boost Request"}</h2>
-            <p style={{ margin: "3px 0 0", fontSize: 12, color: textMuted }}>{isRu ? "Заполните детали и разместите заявку" : "Fill in the details and post"}</p>
+            <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: textPrimary, letterSpacing: "-0.02em" }}>
+              {isEdit ? (isRu ? "Редактировать заявку" : "Edit Request") : (isRu ? "Новая заявка" : "New Boost Request")}
+            </h2>
+            <p style={{ margin: "3px 0 0", fontSize: 12, color: textMuted }}>{isEdit ? (isRu ? "Измените детали заявки" : "Update the request details") : (isRu ? "Заполните детали и разместите заявку" : "Fill in the details and post")}</p>
           </div>
           <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: "50%", border: "none", background: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: textMuted }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -823,7 +862,7 @@ function CreateBoostModal({ onClose, onCreated, isDark }: { onClose: () => void;
             </div>
           </div>
           <div>
-            <label style={{ ...lbl, color: errors.budget ? "#e05050" : textMuted }}>{isRu ? "Бюджет (USD)" : "Budget (USD)"}</label>
+            <label style={{ ...lbl, color: errors.budget ? "#e05050" : textMuted }}>{isRu ? "Сумма (USD)" : "Amount (USD)"}</label>
             <div style={{ position: "relative" }}>
               <span style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", color: textMuted, fontSize: 14, pointerEvents: "none" }}>$</span>
               <input value={budget} onChange={e => { setBudget(e.target.value); setErrors(p => ({ ...p, budget: false })); }} placeholder="0.00" type="number" min="0" step="0.01"
@@ -833,12 +872,17 @@ function CreateBoostModal({ onClose, onCreated, isDark }: { onClose: () => void;
             </div>
           </div>
         </div>
+        {balanceError && (
+          <div style={{ margin: "0 22px", padding: "10px 14px", borderRadius: 9, background: "rgba(248,113,113,0.12)", border: "1px solid rgba(248,113,113,0.3)", color: "#f87171", fontSize: 13, flexShrink: 0 }}>
+            {balanceError}
+          </div>
+        )}
         <div style={{ padding: "14px 22px 18px", borderTop: `1px solid ${dividerColor}`, display: "flex", gap: 9, flexShrink: 0 }}>
           <button onClick={onClose} style={{ flex: 1, height: 42, borderRadius: 9, background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)", border: "none", cursor: "pointer", color: textMuted, fontFamily: "var(--app-font-sans)", fontWeight: 600, fontSize: 13 }}>{isRu ? "Отмена" : "Cancel"}</button>
           <button onClick={submit} style={{ flex: 2, height: 42, borderRadius: 9, background: isDark ? "#f0f0ee" : "#131415", border: "none", cursor: "pointer", color: isDark ? "#111" : "#fff", fontFamily: "var(--app-font-sans)", fontWeight: 700, fontSize: 13 }}
             onMouseEnter={e => (e.currentTarget.style.opacity = "0.88")}
             onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
-            {isRu ? "Разместить заявку" : "Post Request"}
+            {isEdit ? (isRu ? "Сохранить изменения" : "Save Changes") : (isRu ? "Разместить заявку" : "Post Request")}
           </button>
         </div>
       </div>

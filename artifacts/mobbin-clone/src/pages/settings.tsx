@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useAuth } from "../AuthContext";
 import { useLang } from "../LangContext";
 import { useLocation } from "wouter";
+import type { Boost } from "./orders";
 
-type Section = "account" | "preferences" | "billing";
+type Section = "account" | "preferences" | "billing" | "boosts";
 
 const NAV_ITEMS: { key: Section; labelEn: string; labelRu: string; icon: React.ReactNode }[] = [
   {
@@ -33,6 +34,16 @@ const NAV_ITEMS: { key: Section; labelEn: string; labelRu: string; icon: React.R
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+      </svg>
+    ),
+  },
+  {
+    key: "boosts",
+    labelEn: "My Boosts",
+    labelRu: "Мои бусты",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
       </svg>
     ),
   },
@@ -214,6 +225,18 @@ function DepositRow({ deposit, isRu }: { deposit: Deposit; isRu: boolean }) {
 
 const USD_TO_RUB = 90;
 
+function loadUserBoosts(email: string): Boost[] {
+  try {
+    const raw = localStorage.getItem("boost_boosts");
+    const all: Boost[] = raw ? JSON.parse(raw) : [];
+    return all.filter(b => b.authorEmail === email);
+  } catch { return []; }
+}
+
+const GAME_ACCENT: Record<string, string> = {
+  "CS2": "#ffab00", "Dota 2": "#e05050", "Valorant": "#ff4655",
+};
+
 export default function Settings() {
   const { user, logout } = useAuth();
   const { lang } = useLang();
@@ -374,6 +397,91 @@ export default function Settings() {
             <p style={{ color: "rgba(240,240,238,0.45)", fontSize: 14 }}>
               {isRu ? "Настройки предпочтений скоро появятся." : "Preference settings coming soon."}
             </p>
+          </div>
+        )}
+
+        {/* BOOSTS */}
+        {section === "boosts" && (
+          <div>
+            <div style={{ marginBottom: 28 }}>
+              <h2 style={{ fontSize: 22, fontWeight: 700, color: "#f0f0ee", margin: "0 0 6px", letterSpacing: "-0.02em" }}>
+                {isRu ? "Мои бусты" : "My Boosts"}
+              </h2>
+              <p style={{ fontSize: 14, color: "rgba(240,240,238,0.4)", margin: 0 }}>
+                {isRu ? "Ваши текущие и завершённые заявки." : "Your active and completed boost requests."}
+              </p>
+            </div>
+            {(() => {
+              const userBoosts = loadUserBoosts(user?.email ?? "");
+              if (userBoosts.length === 0) {
+                return (
+                  <div style={{ textAlign: "center", padding: "60px 20px", color: "rgba(240,240,238,0.3)", fontSize: 14 }}>
+                    {isRu ? "У вас пока нет заявок. Создайте первую на странице бустов." : "You have no requests yet. Create one on the boosts page."}
+                  </div>
+                );
+              }
+              return (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {userBoosts.map(b => {
+                    const accent = GAME_ACCENT[b.game] ?? "#f0f0ee";
+                    const amount = isRu
+                      ? `₽${Math.round(Number(b.budget) * USD_TO_RUB).toLocaleString("ru-RU")}`
+                      : `$${Number(b.budget).toFixed(0)}`;
+                    const timeAgo = (() => {
+                      const diff = Date.now() - new Date(b.createdAt).getTime();
+                      if (diff < 3600000) return `${Math.round(diff / 60000)} ${isRu ? "мин. назад" : "min ago"}`;
+                      if (diff < 86400000) return `${Math.round(diff / 3600000)} ${isRu ? "ч. назад" : "h ago"}`;
+                      return new Date(b.createdAt).toLocaleDateString(isRu ? "ru-RU" : "en-US", { day: "numeric", month: "short" });
+                    })();
+                    return (
+                      <div
+                        key={b.id}
+                        onClick={() => navigate(`/boosts/${b.id}`)}
+                        style={{
+                          display: "flex", alignItems: "center", gap: 14,
+                          padding: "14px 18px", borderRadius: 12, cursor: "pointer",
+                          background: "rgba(255,255,255,0.03)",
+                          border: "1px solid rgba(255,255,255,0.06)",
+                          transition: "background 0.15s, border-color 0.15s",
+                        }}
+                        onMouseEnter={e => {
+                          (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.06)";
+                          (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.12)";
+                        }}
+                        onMouseLeave={e => {
+                          (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.03)";
+                          (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.06)";
+                        }}
+                      >
+                        <div style={{
+                          width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+                          background: `${accent}18`, border: `1px solid ${accent}40`,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          fontSize: 11, fontWeight: 800, color: accent,
+                        }}>
+                          {b.game === "CS2" ? "CS2" : b.game === "Dota 2" ? "D2" : "VAL"}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 14, fontWeight: 600, color: "#f0f0ee", marginBottom: 3 }}>
+                            {b.game} — {b.currentElo} → <span style={{ color: accent }}>{b.desiredElo}</span>
+                          </div>
+                          <div style={{ fontSize: 12, color: "rgba(240,240,238,0.35)" }}>{timeAgo}</div>
+                        </div>
+                        <div style={{ flexShrink: 0, textAlign: "right" }}>
+                          <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f0ee", fontVariantNumeric: "tabular-nums" }}>{amount}</div>
+                          <div style={{ fontSize: 11, color: "rgba(240,240,238,0.3)", marginTop: 2 }}>
+                            {isRu ? "сумма" : "amount"}
+                          </div>
+                        </div>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,238,0.25)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                          <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
         )}
 

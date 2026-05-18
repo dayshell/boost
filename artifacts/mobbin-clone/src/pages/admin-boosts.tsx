@@ -157,7 +157,7 @@ export default function AdminBoosts() {
           <div>Автор</div>
           <div>Игра</div>
           <div>Маршрут</div>
-          <div>Бюджет</div>
+          <div>Сумма</div>
           <div>Статус</div>
           <div>Дата</div>
         </div>
