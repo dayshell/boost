@@ -874,8 +874,25 @@ function AppHeader() {
       display: "flex", alignItems: "center",
       padding: "0 24px", gap: 16,
     }}>
-      {/* Left spacer */}
-      <div style={{ flex: 1 }} />
+      {/* Left: logo + nav links */}
+      <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 4 }}>
+        <a href="/" style={{ textDecoration: "none", marginRight: 8 }}>
+          <BoostLogo size={26} />
+        </a>
+        {[
+          { label: isRu ? "Бусты" : "Boosts", href: "/boosts" },
+          { label: isRu ? "Флоу" : "Flows", href: "/flows" },
+        ].map(({ label, href }) => (
+          <a key={href} href={href} style={{
+            fontSize: 13, fontWeight: 500, color: "var(--text-secondary)",
+            textDecoration: "none", padding: "4px 10px", borderRadius: 7,
+            transition: "background 0.12s, color 0.12s",
+          }}
+            onMouseEnter={e => { e.currentTarget.style.background = "var(--bg-secondary)"; e.currentTarget.style.color = "var(--text-primary)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-secondary)"; }}
+          >{label}</a>
+        ))}
+      </div>
 
       {/* Search bar — centered */}
       <div style={{
@@ -947,6 +964,7 @@ export default function Navbar() {
   const { lang } = useLang();
   const { theme, toggleTheme } = useTheme();
   const { user } = useAuth();
+  const isRu = lang === "ru";
   const tr = translations[lang].nav;
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -956,6 +974,7 @@ export default function Navbar() {
   }
 
   const navLinks = [
+    { label: isRu ? "Флоу" : "Flows", href: "/flows" },
     { label: tr.signIn, href: "/login" },
   ];
 
