@@ -29,15 +29,45 @@ const GAME_COLORS: Record<string, { accent: string; dim: string }> = {
   "Valorant": { accent: "#ff4655", dim: "rgba(255,70,85,0.18)" },
 };
 
+const GAME_LOGO: Record<string, string> = {
+  "CS2":      "/games/cs2_new.png",
+  "Dota 2":   "/games/dota2_new.png",
+  "Valorant": "/games/valorant_new.png",
+};
+
+const RANKS: Record<string, string[]> = {
+  "CS2": [
+    "Silver 1","Silver 2","Silver 3","Silver 4","Silver Elite","Silver Elite Master",
+    "Gold Nova 1","Gold Nova 2","Gold Nova 3","Gold Nova Master",
+    "MG1","MG2","MGE","DMG","LE","LEM","SMFC","GE",
+  ],
+  "Dota 2": [
+    "Herald","Guardian","Crusader","Archon","Legend","Ancient","Divine","Immortal",
+  ],
+  "Valorant": [
+    "Iron 1","Iron 2","Iron 3",
+    "Bronze 1","Bronze 2","Bronze 3",
+    "Silver 1","Silver 2","Silver 3",
+    "Gold 1","Gold 2","Gold 3",
+    "Platinum 1","Platinum 2","Platinum 3",
+    "Diamond 1","Diamond 2","Diamond 3",
+    "Ascendant 1","Ascendant 2","Ascendant 3",
+    "Immortal 1","Immortal 2","Immortal 3",
+    "Radiant",
+  ],
+};
+
+const MAX_BUDGET = 300;
+
 /* ── Seed data ──────────────────────────────────── */
 const SEED_BOOSTS: Boost[] = [
   { id: "seed-1", authorName: "Артём K.", authorEmail: "artem@example.com", game: "CS2", currentElo: "Silver 3", desiredElo: "Gold Nova 2", contact: "@artem_boost", description: "Аккаунт чистый, без банов. Хочу побыстрее — готов к овертайму.", timeFrom: "10:00", timeTo: "23:00", budget: "35.00", createdAt: new Date(Date.now() - 1000 * 60 * 18).toISOString() },
   { id: "seed-2", authorName: "Maksim_D", authorEmail: "maks@example.com", game: "Valorant", currentElo: "Iron 2", desiredElo: "Bronze 3", contact: "discord: maks#4421", description: "Нужно поднять до Bronze 3 как можно скорее.", timeFrom: "18:00", timeTo: "02:00", budget: "28.00", createdAt: new Date(Date.now() - 1000 * 60 * 45).toISOString() },
-  { id: "seed-3", authorName: "SerpentX", authorEmail: "serp@example.com", game: "Dota 2", currentElo: "1 800 MMR", desiredElo: "2 500 MMR", contact: "@serpentx_dota", description: "Жду быстрого буста, аккаунт готов.", timeFrom: "09:00", timeTo: "21:00", budget: "60.00", createdAt: new Date(Date.now() - 1000 * 60 * 90).toISOString() },
+  { id: "seed-3", authorName: "SerpentX", authorEmail: "serp@example.com", game: "Dota 2", currentElo: "Ancient", desiredElo: "Divine", contact: "@serpentx_dota", description: "Жду быстрого буста, аккаунт готов.", timeFrom: "09:00", timeTo: "21:00", budget: "60.00", createdAt: new Date(Date.now() - 1000 * 60 * 90).toISOString() },
   { id: "seed-4", authorName: "nika_val", authorEmail: "nika@example.com", game: "Valorant", currentElo: "Silver 1", desiredElo: "Platinum 1", contact: "t.me/nika_boost", description: "Хочу в платину до конца сезона. Аккаунт с 300+ матчами.", timeFrom: "11:00", timeTo: "20:00", budget: "90.00", createdAt: new Date(Date.now() - 1000 * 60 * 180).toISOString() },
   { id: "seed-5", authorName: "ProPlayerZero", authorEmail: "zero@example.com", game: "CS2", currentElo: "MG1", desiredElo: "DMG", contact: "@zero_cs2", description: "Аккаунт старый, Prime статус есть.", timeFrom: "20:00", timeTo: "01:00", budget: "50.00", createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString() },
-  { id: "seed-6", authorName: "ivannn99", authorEmail: "ivan99@example.com", game: "Dota 2", currentElo: "3 100 MMR", desiredElo: "4 000 MMR", contact: "vk.com/ivannn99", description: "900 MMR разрыв, бюджет обсуждаем.", timeFrom: "14:00", timeTo: "22:00", budget: "120.00", createdAt: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString() },
-  { id: "seed-7", authorName: "DimaTwitch", authorEmail: "dima@example.com", game: "CS2", currentElo: "GN4", desiredElo: "Master Guardian Elite", contact: "discord: dima#7731", description: "Стримлю иногда — желательно не удалять игровую историю.", timeFrom: "00:00", timeTo: "06:00", budget: "42.00", createdAt: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString() },
+  { id: "seed-6", authorName: "ivannn99", authorEmail: "ivan99@example.com", game: "Dota 2", currentElo: "Legend", desiredElo: "Ancient", contact: "vk.com/ivannn99", description: "900 MMR разрыв, бюджет обсуждаем.", timeFrom: "14:00", timeTo: "22:00", budget: "120.00", createdAt: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString() },
+  { id: "seed-7", authorName: "DimaTwitch", authorEmail: "dima@example.com", game: "CS2", currentElo: "GN4", desiredElo: "MGE", contact: "discord: dima#7731", description: "Стримлю иногда — желательно не удалять игровую историю.", timeFrom: "00:00", timeTo: "06:00", budget: "42.00", createdAt: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString() },
   { id: "seed-8", authorName: "Alex_Boost", authorEmail: "alex@example.com", game: "Valorant", currentElo: "Gold 2", desiredElo: "Diamond 1", contact: "@alex_val", description: "Нужно до Даймонда, готов ждать неделю.", timeFrom: "12:00", timeTo: "23:00", budget: "150.00", createdAt: new Date(Date.now() - 1000 * 60 * 60 * 20).toISOString() },
 ];
 
@@ -57,50 +87,6 @@ function isNew(dateStr: string): boolean {
   return Date.now() - new Date(dateStr).getTime() < 1000 * 60 * 60 * 3;
 }
 
-/* ── Game logo SVGs ──────────────────────────────── */
-function LogoAll({ size = 22 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <rect x="2" y="2" width="9" height="9" rx="2" fill="currentColor" opacity="0.9"/>
-      <rect x="13" y="2" width="9" height="9" rx="2" fill="currentColor" opacity="0.65"/>
-      <rect x="2" y="13" width="9" height="9" rx="2" fill="currentColor" opacity="0.65"/>
-      <rect x="13" y="13" width="9" height="9" rx="2" fill="currentColor" opacity="0.9"/>
-    </svg>
-  );
-}
-
-function LogoCS2({ size = 22, color = "currentColor" }: { size?: number; color?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
-      <path d="M16 2L4 8v8c0 6.6 5.1 12.8 12 14 6.9-1.2 12-7.4 12-14V8L16 2z" fill={color} opacity="0.15"/>
-      <path d="M16 2L4 8v8c0 6.6 5.1 12.8 12 14 6.9-1.2 12-7.4 12-14V8L16 2z" stroke={color} strokeWidth="1.5" fill="none"/>
-      <circle cx="16" cy="16" r="3" fill={color}/>
-      <line x1="16" y1="8" x2="16" y2="11" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
-      <line x1="16" y1="21" x2="16" y2="24" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
-      <line x1="8" y1="16" x2="11" y2="16" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
-      <line x1="21" y1="16" x2="24" y2="16" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
-    </svg>
-  );
-}
-
-function LogoDota2({ size = 22, color = "currentColor" }: { size?: number; color?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
-      <path d="M16 3 L29 10 V22 L16 29 L3 22 V10 Z" stroke={color} strokeWidth="1.5" fill={color} fillOpacity="0.12"/>
-      <text x="16" y="21" textAnchor="middle" fill={color} fontSize="11" fontWeight="900" fontFamily="Arial Black,Arial">D2</text>
-    </svg>
-  );
-}
-
-function LogoValorant({ size = 22, color = "currentColor" }: { size?: number; color?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
-      <path d="M3 26L14 4h4L7 26H3z" fill={color}/>
-      <path d="M13 26L24 4h4l-11 22h-4z" fill={color} opacity="0.55"/>
-    </svg>
-  );
-}
-
 /* ── Card preview SVG ────────────────────────────── */
 function CardPreview({ boost }: { boost: Boost }) {
   const col = GAME_COLORS[boost.game];
@@ -108,17 +94,14 @@ function CardPreview({ boost }: { boost: Boost }) {
     "CS2": "#0d1117", "Dota 2": "#0c0e13", "Valorant": "#0f0e14",
   };
   const bg = bgMap[boost.game];
-
   return (
     <svg viewBox="0 0 280 175" xmlns="http://www.w3.org/2000/svg" style={{ display: "block", width: "100%", height: "100%" }}>
       <rect width="280" height="175" fill={bg}/>
-      {/* Browser bar */}
       <rect width="280" height="26" fill="rgba(255,255,255,0.04)"/>
       <circle cx="13" cy="13" r="3" fill="rgba(255,255,255,0.18)"/>
       <circle cx="22" cy="13" r="3" fill="rgba(255,255,255,0.18)"/>
       <circle cx="31" cy="13" r="3" fill="rgba(255,255,255,0.18)"/>
       <rect x="46" y="7" width="120" height="12" rx="3" fill="rgba(255,255,255,0.07)"/>
-      {/* Current rank box */}
       <rect x="12" y="38" width="76" height="80" rx="8" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5"/>
       <circle cx="50" cy="62" r="17" fill={col.dim} stroke={col.accent} strokeWidth="0.7" strokeOpacity="0.5"/>
       {boost.game === "Valorant" ? <polygon points="50,49 62,75 38,75" fill={col.accent} opacity="0.85"/> :
@@ -128,10 +111,8 @@ function CardPreview({ boost }: { boost: Boost }) {
       <text x="50" y="110" textAnchor="middle" fill="rgba(255,255,255,0.65)" fontSize="7" fontWeight="700" fontFamily="Arial">
         {boost.currentElo.length > 10 ? boost.currentElo.slice(0, 10) : boost.currentElo}
       </text>
-      {/* Arrow */}
       <line x1="96" y1="78" x2="114" y2="78" stroke={col.accent} strokeWidth="1.5" strokeOpacity="0.7"/>
       <polygon points="114,74 120,78 114,82" fill={col.accent} opacity="0.7"/>
-      {/* Target rank box */}
       <rect x="124" y="38" width="76" height="80" rx="8" fill={col.dim} stroke={col.accent} strokeWidth="0.5" strokeOpacity="0.4"/>
       <circle cx="162" cy="62" r="17" fill="rgba(0,0,0,0.25)" stroke={col.accent} strokeWidth="1" strokeOpacity="0.8"/>
       {boost.game === "Valorant" ? <polygon points="162,49 174,75 150,75" fill={col.accent}/> :
@@ -141,121 +122,260 @@ function CardPreview({ boost }: { boost: Boost }) {
       <text x="162" y="110" textAnchor="middle" fill={col.accent} fontSize="7" fontWeight="700" fontFamily="Arial">
         {boost.desiredElo.length > 10 ? boost.desiredElo.slice(0, 10) : boost.desiredElo}
       </text>
-      {/* Budget */}
       <rect x="208" y="38" width="60" height="30" rx="6" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.09)" strokeWidth="0.5"/>
       <text x="238" y="49" textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize="5.5" fontFamily="Arial">BUDGET</text>
       <text x="238" y="61" textAnchor="middle" fill="#f0f0ee" fontSize="11" fontWeight="700" fontFamily="Arial">${Number(boost.budget).toFixed(0)}</text>
-      {/* Time */}
       <rect x="208" y="76" width="60" height="24" rx="5" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.06)" strokeWidth="0.5"/>
       <text x="238" y="86" textAnchor="middle" fill="rgba(255,255,255,0.28)" fontSize="5" fontFamily="Arial">MSK TIME</text>
       <text x="238" y="96" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="7" fontFamily="Arial">{boost.timeFrom}–{boost.timeTo}</text>
-      {/* Description lines */}
       <rect x="12" y="128" width="256" height="7" rx="2.5" fill="rgba(255,255,255,0.06)"/>
       <rect x="12" y="141" width="190" height="6" rx="2" fill="rgba(255,255,255,0.04)"/>
       <rect x="12" y="153" width="130" height="5" rx="2" fill="rgba(255,255,255,0.03)"/>
-      {/* Bottom accent */}
       <rect x="0" y="172" width="280" height="3" fill={col.accent} opacity="0.4"/>
     </svg>
   );
 }
 
-/* ── Game icon for card footer ───────────────────── */
-function GameLogo({ game, size = 32 }: { game: string; size?: number }) {
+/* ── Game logo image for footer ──────────────────── */
+function GameLogoImg({ game, size = 32 }: { game: string; size?: number }) {
   const col = GAME_COLORS[game];
   const r = Math.round(size * 0.28);
   return (
     <div style={{
       width: size, height: size, borderRadius: r, flexShrink: 0,
       background: col.dim, display: "flex", alignItems: "center", justifyContent: "center",
-      border: "1px solid rgba(255,255,255,0.08)",
+      border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden",
     }}>
-      {game === "CS2" ? <LogoCS2 size={size * 0.58} color={col.accent}/> :
-       game === "Dota 2" ? <LogoDota2 size={size * 0.6} color={col.accent}/> :
-       <LogoValorant size={size * 0.6} color={col.accent}/>}
+      <img src={GAME_LOGO[game]} alt={game} style={{ width: "100%", height: "100%", objectFit: "cover" }}/>
     </div>
   );
 }
 
-/* ── Boost card — EXACT Mobbin structure ─────────── */
+/* ── Boost card — Mobbin structure ───────────────── */
 function BoostCard({ boost, onClick, isDark }: { boost: Boost; onClick: () => void; isDark: boolean }) {
   const [hov, setHov] = useState(false);
   const fresh = isNew(boost.createdAt);
-
   const cardBg = isDark ? "#252525" : "#e8e8e6";
   const textPrimary = isDark ? "#f0f0ee" : "#131415";
   const textSecondary = isDark ? "rgba(240,240,238,0.45)" : "#666660";
 
   return (
-    <div
-      onClick={onClick}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      style={{ cursor: "pointer" }}
-    >
-      {/* ── Gray card container (like Mobbin) ── */}
-      <div style={{
-        background: cardBg,
-        borderRadius: 18, padding: 8,
-        transition: "transform 0.15s",
-        transform: hov ? "translateY(-4px)" : "none",
-        position: "relative",
-      }}>
-        {/* Screenshot preview inside with own border-radius */}
+    <div onClick={onClick} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)} style={{ cursor: "pointer" }}>
+      <div style={{ background: cardBg, borderRadius: 18, padding: 8, transition: "transform 0.15s", transform: hov ? "translateY(-4px)" : "none", position: "relative" }}>
         <div style={{ borderRadius: 12, overflow: "hidden", aspectRatio: "16/10" }}>
           <CardPreview boost={boost}/>
         </div>
-
-        {/* "New" badge — absolute top-left of card */}
         {fresh && (
-          <div style={{
-            position: "absolute", top: 16, left: 16,
-            background: isDark ? "#f0f0ee" : "#131415",
-            color: isDark ? "#111" : "#fff",
-            fontSize: 10, fontWeight: 700, letterSpacing: "0.04em",
-            borderRadius: 6, padding: "3px 8px",
-            fontFamily: "var(--app-font-sans)",
-          }}>New</div>
+          <div style={{ position: "absolute", top: 16, left: 16, background: isDark ? "#f0f0ee" : "#131415", color: isDark ? "#111" : "#fff", fontSize: 10, fontWeight: 700, letterSpacing: "0.04em", borderRadius: 6, padding: "3px 8px", fontFamily: "var(--app-font-sans)" }}>New</div>
         )}
-
-        {/* Bookmark icon — top-right */}
-        <div style={{
-          position: "absolute", top: 16, right: 16,
-          width: 26, height: 26, borderRadius: 7,
-          background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)",
-          border: "1px solid rgba(255,255,255,0.12)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          opacity: hov ? 1 : 0, transition: "opacity 0.15s",
-        }}>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-          </svg>
+        <div style={{ position: "absolute", top: 16, right: 16, width: 26, height: 26, borderRadius: 7, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", opacity: hov ? 1 : 0, transition: "opacity 0.15s" }}>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
         </div>
       </div>
-
-      {/* ── Footer OUTSIDE the card — exactly like Mobbin ── */}
-      <div style={{
-        padding: "11px 4px 0",
-        display: "flex", alignItems: "flex-start", gap: 10,
-      }}>
-        <GameLogo game={boost.game} size={32}/>
+      <div style={{ padding: "11px 4px 0", display: "flex", alignItems: "flex-start", gap: 10 }}>
+        <GameLogoImg game={boost.game} size={32}/>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{
-            fontSize: 13, fontWeight: 600, color: textPrimary,
-            whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-            marginBottom: 2, lineHeight: 1.3,
-          }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: textPrimary, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginBottom: 2, lineHeight: 1.3 }}>
             {boost.authorName}
           </div>
-          <div style={{
-            fontSize: 11, color: textSecondary,
-            overflow: "hidden", textOverflow: "ellipsis",
-            display: "-webkit-box",
-            WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
-            lineHeight: 1.45,
-          }}>
+          <div style={{ fontSize: 11, color: textSecondary, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", lineHeight: 1.45 }}>
             {boost.description || `${boost.currentElo} → ${boost.desiredElo}`}
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Range slider (dual handle) ─────────────────── */
+function RangeSlider({ min, max, value, onChange, isDark, accentColor }: {
+  min: number; max: number; value: [number, number];
+  onChange: (v: [number, number]) => void;
+  isDark: boolean; accentColor: string;
+}) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const dragging = useRef<null | "lo" | "hi">(null);
+
+  const pct = (v: number) => ((v - min) / (max - min)) * 100;
+
+  function getValFromX(clientX: number): number {
+    const rect = trackRef.current!.getBoundingClientRect();
+    const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    return Math.round(min + ratio * (max - min));
+  }
+
+  function onMouseDown(handle: "lo" | "hi") {
+    return (e: React.MouseEvent) => {
+      e.preventDefault();
+      dragging.current = handle;
+      const move = (ev: MouseEvent) => {
+        const v = getValFromX(ev.clientX);
+        onChange(handle === "lo" ? [Math.min(v, value[1]), value[1]] : [value[0], Math.max(v, value[0])]);
+      };
+      const up = () => { dragging.current = null; window.removeEventListener("mousemove", move); window.removeEventListener("mouseup", up); };
+      window.addEventListener("mousemove", move);
+      window.addEventListener("mouseup", up);
+    };
+  }
+
+  function onTrackClick(e: React.MouseEvent) {
+    if (!trackRef.current) return;
+    const v = getValFromX(e.clientX);
+    const distLo = Math.abs(v - value[0]);
+    const distHi = Math.abs(v - value[1]);
+    if (distLo <= distHi) onChange([Math.min(v, value[1]), value[1]]);
+    else onChange([value[0], Math.max(v, value[0])]);
+  }
+
+  const trackBg = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
+  const handleBg = isDark ? "#f0f0ee" : "#131415";
+
+  return (
+    <div style={{ position: "relative", height: 20, display: "flex", alignItems: "center" }}>
+      <div ref={trackRef} onClick={onTrackClick} style={{ position: "relative", width: "100%", height: 4, borderRadius: 2, background: trackBg, cursor: "pointer" }}>
+        <div style={{ position: "absolute", left: `${pct(value[0])}%`, width: `${pct(value[1]) - pct(value[0])}%`, height: "100%", background: accentColor, borderRadius: 2 }}/>
+        {(["lo","hi"] as const).map(h => (
+          <div key={h} onMouseDown={onMouseDown(h)} style={{
+            position: "absolute", top: "50%",
+            left: `${pct(h === "lo" ? value[0] : value[1])}%`,
+            transform: "translate(-50%,-50%)",
+            width: 14, height: 14, borderRadius: "50%",
+            background: handleBg, border: `2px solid ${accentColor}`,
+            cursor: "grab", zIndex: 2, boxShadow: "0 1px 4px rgba(0,0,0,0.3)",
+            transition: "box-shadow 0.1s",
+          }}/>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── Filter panel (dropdown) ─────────────────────── */
+interface FilterState {
+  budgetRange: [number, number];
+  rankFrom: string;
+  rankTo: string;
+}
+
+function FilterPanel({ onClose, filters, setFilters, gameFilter, isDark, isRu }: {
+  onClose: () => void;
+  filters: FilterState;
+  setFilters: (f: FilterState) => void;
+  gameFilter: string;
+  isDark: boolean;
+  isRu: boolean;
+}) {
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [local, setLocal] = useState<FilterState>({ ...filters });
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) onClose();
+    }
+    setTimeout(() => document.addEventListener("mousedown", handler), 0);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const bg = isDark ? "#1c1c1c" : "#ffffff";
+  const border = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
+  const textPrimary = isDark ? "#f0f0ee" : "#131415";
+  const textMuted = isDark ? "rgba(240,240,238,0.45)" : "#666660";
+  const chipBg = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)";
+  const chipActiveBg = isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.12)";
+
+  const rankList = gameFilter !== "all" ? (RANKS[gameFilter] ?? []) : [];
+  const accent = gameFilter !== "all" ? GAME_COLORS[gameFilter].accent : (isDark ? "#f0f0ee" : "#131415");
+
+  const lbl: React.CSSProperties = { fontSize: 10, fontWeight: 700, color: textMuted, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 10, display: "block" };
+
+  function apply() { setFilters(local); onClose(); }
+  function reset() { setLocal({ budgetRange: [0, MAX_BUDGET], rankFrom: "", rankTo: "" }); }
+  const dirty = local.budgetRange[0] > 0 || local.budgetRange[1] < MAX_BUDGET || !!local.rankFrom || !!local.rankTo;
+
+  return (
+    <div ref={panelRef} style={{
+      position: "absolute", top: "calc(100% + 6px)", left: 0,
+      width: 320, background: bg, border: `1px solid ${border}`,
+      borderRadius: 14, boxShadow: "0 12px 40px rgba(0,0,0,0.3)",
+      zIndex: 200, padding: "18px 18px 14px", fontFamily: "var(--app-font-sans)",
+    }}>
+      {/* Budget slider */}
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <span style={lbl as React.CSSProperties}>{isRu ? "Бюджет" : "Budget"}</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: textPrimary }}>
+            ${local.budgetRange[0]} — {local.budgetRange[1] >= MAX_BUDGET ? `$${MAX_BUDGET}+` : `$${local.budgetRange[1]}`}
+          </span>
+        </div>
+        <RangeSlider
+          min={0} max={MAX_BUDGET}
+          value={local.budgetRange}
+          onChange={v => setLocal(p => ({ ...p, budgetRange: v }))}
+          isDark={isDark} accentColor={accent}
+        />
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
+          <span style={{ fontSize: 10, color: textMuted }}>$0</span>
+          <span style={{ fontSize: 10, color: textMuted }}>${MAX_BUDGET}+</span>
+        </div>
+      </div>
+
+      {/* Rank filter — only when a game is selected */}
+      {rankList.length > 0 && (
+        <div style={{ marginBottom: 18 }}>
+          <span style={lbl as React.CSSProperties}>{isRu ? "Текущий ранг" : "Current rank"}</span>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+            {rankList.map(rank => {
+              const active = local.rankFrom === rank;
+              return (
+                <button key={rank} onClick={() => setLocal(p => ({ ...p, rankFrom: p.rankFrom === rank ? "" : rank }))}
+                  style={{
+                    padding: "4px 10px", borderRadius: 20, border: "none", cursor: "pointer",
+                    background: active ? accent : chipBg,
+                    color: active ? (isDark ? "#111" : "#fff") : textPrimary,
+                    fontSize: 11, fontWeight: active ? 600 : 400,
+                    fontFamily: "var(--app-font-sans)", transition: "all 0.12s",
+                  }}>
+                  {rank}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {rankList.length > 0 && (
+        <div style={{ marginBottom: 18 }}>
+          <span style={lbl as React.CSSProperties}>{isRu ? "Желаемый ранг" : "Target rank"}</span>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+            {rankList.map(rank => {
+              const active = local.rankTo === rank;
+              return (
+                <button key={rank} onClick={() => setLocal(p => ({ ...p, rankTo: p.rankTo === rank ? "" : rank }))}
+                  style={{
+                    padding: "4px 10px", borderRadius: 20, border: "none", cursor: "pointer",
+                    background: active ? accent : chipBg,
+                    color: active ? (isDark ? "#111" : "#fff") : textPrimary,
+                    fontSize: 11, fontWeight: active ? 600 : 400,
+                    fontFamily: "var(--app-font-sans)", transition: "all 0.12s",
+                  }}>
+                  {rank}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Footer buttons */}
+      <div style={{ display: "flex", gap: 8, borderTop: `1px solid ${border}`, paddingTop: 12, marginTop: 4 }}>
+        <button onClick={reset} disabled={!dirty} style={{ flex: 1, height: 34, borderRadius: 8, border: "none", cursor: dirty ? "pointer" : "default", background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", color: dirty ? textPrimary : textMuted, fontFamily: "var(--app-font-sans)", fontSize: 12, fontWeight: 600, opacity: dirty ? 1 : 0.5, transition: "opacity 0.12s" }}>
+          {isRu ? "Сбросить" : "Reset"}
+        </button>
+        <button onClick={apply} style={{ flex: 2, height: 34, borderRadius: 8, border: "none", cursor: "pointer", background: accent, color: isDark ? "#111" : "#fff", fontFamily: "var(--app-font-sans)", fontSize: 12, fontWeight: 700, transition: "opacity 0.12s" }}
+          onMouseEnter={e => (e.currentTarget.style.opacity = "0.88")}
+          onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
+          {isRu ? "Применить" : "Apply"}
+        </button>
       </div>
     </div>
   );
@@ -285,16 +405,11 @@ function CreateBoostModal({ onClose, onCreated, isDark }: { onClose: () => void;
   const dividerColor = isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.08)";
 
   const inp: React.CSSProperties = {
-    width: "100%", height: 42, padding: "0 13px",
-    borderRadius: 9, border: `1px solid ${inputBorder}`,
-    background: inputBg, color: textPrimary,
-    fontFamily: "var(--app-font-sans)", fontSize: 14,
+    width: "100%", height: 42, padding: "0 13px", borderRadius: 9, border: `1px solid ${inputBorder}`,
+    background: inputBg, color: textPrimary, fontFamily: "var(--app-font-sans)", fontSize: 14,
     outline: "none", boxSizing: "border-box", transition: "border-color 0.15s",
   };
-  const lbl: React.CSSProperties = {
-    fontSize: 11, fontWeight: 600, color: textMuted,
-    letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 5, display: "block",
-  };
+  const lbl: React.CSSProperties = { fontSize: 11, fontWeight: 600, color: textMuted, letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 5, display: "block" };
 
   function submit() {
     const err: Record<string, boolean> = {};
@@ -314,33 +429,17 @@ function CreateBoostModal({ onClose, onCreated, isDark }: { onClose: () => void;
   }
 
   return createPortal(
-    <div onClick={e => e.target === e.currentTarget && onClose()} style={{
-      position: "fixed", inset: 0, zIndex: 9999,
-      background: "rgba(0,0,0,0.6)", backdropFilter: "blur(10px)",
-      display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
-    }}>
-      <div style={{
-        width: "100%", maxWidth: 520, background: modalBg,
-        border: `1px solid ${dividerColor}`, borderRadius: 18,
-        boxShadow: "0 40px 100px rgba(0,0,0,0.5)",
-        maxHeight: "92vh", display: "flex", flexDirection: "column",
-      }}>
+    <div onClick={e => e.target === e.currentTarget && onClose()} style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(10px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div style={{ width: "100%", maxWidth: 520, background: modalBg, border: `1px solid ${dividerColor}`, borderRadius: 18, boxShadow: "0 40px 100px rgba(0,0,0,0.5)", maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 22px 16px", borderBottom: `1px solid ${dividerColor}`, flexShrink: 0 }}>
           <div>
-            <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: textPrimary, letterSpacing: "-0.02em" }}>
-              {isRu ? "Новая заявка" : "New Boost Request"}
-            </h2>
-            <p style={{ margin: "3px 0 0", fontSize: 12, color: textMuted }}>
-              {isRu ? "Заполните детали и разместите заявку" : "Fill in the details and post"}
-            </p>
+            <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: textPrimary, letterSpacing: "-0.02em" }}>{isRu ? "Новая заявка" : "New Boost Request"}</h2>
+            <p style={{ margin: "3px 0 0", fontSize: 12, color: textMuted }}>{isRu ? "Заполните детали и разместите заявку" : "Fill in the details and post"}</p>
           </div>
           <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: "50%", border: "none", background: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: textMuted }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
-
         <div style={{ padding: "18px 22px 20px", overflowY: "auto", display: "flex", flexDirection: "column", gap: 14 }}>
           <div>
             <label style={lbl}>{isRu ? "Игра" : "Game"}</label>
@@ -349,13 +448,9 @@ function CreateBoostModal({ onClose, onCreated, isDark }: { onClose: () => void;
                 const active = game === g;
                 const col = GAME_COLORS[g];
                 return (
-                  <button key={g} onClick={() => setGame(g)} style={{
-                    flex: 1, height: 38, borderRadius: 9, border: "none", cursor: "pointer",
-                    background: active ? col.dim : (isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)"),
-                    color: active ? col.accent : textMuted,
-                    fontFamily: "var(--app-font-sans)", fontWeight: active ? 700 : 400, fontSize: 13,
-                    transition: "all 0.12s", outline: active ? `1px solid ${col.dim}` : "none", outlineOffset: 1,
-                  }}>{g}</button>
+                  <button key={g} onClick={() => setGame(g)} style={{ flex: 1, height: 38, borderRadius: 9, border: "none", cursor: "pointer", background: active ? col.dim : (isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)"), color: active ? col.accent : textMuted, fontFamily: "var(--app-font-sans)", fontWeight: active ? 700 : 400, fontSize: 13, transition: "all 0.12s" }}>
+                    {g}
+                  </button>
                 );
               })}
             </div>
@@ -363,14 +458,14 @@ function CreateBoostModal({ onClose, onCreated, isDark }: { onClose: () => void;
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             <div>
               <label style={{ ...lbl, color: errors.currentElo ? "#e05050" : textMuted }}>{isRu ? "Текущий ранг" : "Current rank"}</label>
-              <input value={currentElo} onChange={e => { setCurrentElo(e.target.value); setErrors(p => ({ ...p, currentElo: false })); }} placeholder="Silver 2"
+              <input value={currentElo} onChange={e => { setCurrentElo(e.target.value); setErrors(p => ({ ...p, currentElo: false })); }} placeholder={RANKS[game][0]}
                 style={{ ...inp, borderColor: errors.currentElo ? "#e05050" : inputBorder }}
                 onFocus={e => (e.target.style.borderColor = isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)")}
                 onBlur={e => (e.target.style.borderColor = errors.currentElo ? "#e05050" : inputBorder)}/>
             </div>
             <div>
               <label style={{ ...lbl, color: errors.desiredElo ? "#e05050" : textMuted }}>{isRu ? "Желаемый ранг" : "Target rank"}</label>
-              <input value={desiredElo} onChange={e => { setDesiredElo(e.target.value); setErrors(p => ({ ...p, desiredElo: false })); }} placeholder="Gold Nova 3"
+              <input value={desiredElo} onChange={e => { setDesiredElo(e.target.value); setErrors(p => ({ ...p, desiredElo: false })); }} placeholder={RANKS[game][3]}
                 style={{ ...inp, borderColor: errors.desiredElo ? "#e05050" : inputBorder }}
                 onFocus={e => (e.target.style.borderColor = isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)")}
                 onBlur={e => (e.target.style.borderColor = errors.desiredElo ? "#e05050" : inputBorder)}/>
@@ -385,8 +480,7 @@ function CreateBoostModal({ onClose, onCreated, isDark }: { onClose: () => void;
           </div>
           <div>
             <label style={lbl}>{isRu ? "Описание (необязательно)" : "Description (optional)"}</label>
-            <textarea value={description} onChange={e => setDescription(e.target.value)}
-              placeholder={isRu ? "О вашем аккаунте…" : "About your account…"} rows={2}
+            <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder={isRu ? "О вашем аккаунте…" : "About your account…"} rows={2}
               style={{ ...inp, height: "auto", padding: "10px 13px", resize: "vertical", lineHeight: 1.5 }}/>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: 8, alignItems: "center" }}>
@@ -411,15 +505,13 @@ function CreateBoostModal({ onClose, onCreated, isDark }: { onClose: () => void;
             </div>
           </div>
         </div>
-
         <div style={{ padding: "14px 22px 18px", borderTop: `1px solid ${dividerColor}`, display: "flex", gap: 9, flexShrink: 0 }}>
-          <button onClick={onClose} style={{ flex: 1, height: 42, borderRadius: 9, background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)", border: "none", cursor: "pointer", color: textMuted, fontFamily: "var(--app-font-sans)", fontWeight: 600, fontSize: 13 }}>
-            {isRu ? "Отмена" : "Cancel"}
-          </button>
-          <button onClick={submit} style={{ flex: 2, height: 42, borderRadius: 9, background: isDark ? "#f0f0ee" : "#131415", border: "none", cursor: "pointer", color: isDark ? "#111" : "#fff", fontFamily: "var(--app-font-sans)", fontWeight: 700, fontSize: 13, transition: "opacity 0.12s" }}
+          <button onClick={onClose} style={{ flex: 1, height: 42, borderRadius: 9, background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)", border: "none", cursor: "pointer", color: textMuted, fontFamily: "var(--app-font-sans)", fontWeight: 600, fontSize: 13 }}>{isRu ? "Отмена" : "Cancel"}</button>
+          <button onClick={submit} style={{ flex: 2, height: 42, borderRadius: 9, background: isDark ? "#f0f0ee" : "#131415", border: "none", cursor: "pointer", color: isDark ? "#111" : "#fff", fontFamily: "var(--app-font-sans)", fontWeight: 700, fontSize: 13 }}
             onMouseEnter={e => (e.currentTarget.style.opacity = "0.88")}
-            onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
-          >{isRu ? "Разместить заявку" : "Post Request"}</button>
+            onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
+            {isRu ? "Разместить заявку" : "Post Request"}
+          </button>
         </div>
       </div>
     </div>,
@@ -437,30 +529,29 @@ const GAME_TABS: { id: GameFilter; label: string }[] = [
   { id: "Valorant", label: "Valorant" },
 ];
 
-function GameTabIcon({ id, size = 20 }: { id: GameFilter; size?: number }) {
-  if (id === "all")      return <LogoAll size={size}/>;
-  if (id === "CS2")      return <LogoCS2 size={size} color="currentColor"/>;
-  if (id === "Dota 2")   return <LogoDota2 size={size} color="currentColor"/>;
-  return <LogoValorant size={size} color="currentColor"/>;
-}
-
 /* ── Page ─────────────────────────────────────────── */
+const DEFAULT_FILTERS: FilterState = { budgetRange: [0, MAX_BUDGET], rankFrom: "", rankTo: "" };
+
 export default function Boosts() {
   const { user } = useAuth();
   const { lang } = useLang();
   const { theme } = useTheme();
   const [, navigate] = useLocation();
   const isRu = lang === "ru";
-
   const isDark = theme === "dark" || (theme === "system" && typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches);
 
   const [boosts, setBoosts] = useState<Boost[]>(loadBoosts);
   const [gameFilter, setGameFilter] = useState<GameFilter>("all");
   const [showCreate, setShowCreate] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [search, setSearch] = useState(SearchContext.value);
+  const filterBtnRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { if (!user) navigate("/login"); }, [user]);
   useEffect(() => SearchContext.subscribe(v => setSearch(v)), []);
+
+  const hasActiveFilters = filters.budgetRange[0] > 0 || filters.budgetRange[1] < MAX_BUDGET || !!filters.rankFrom || !!filters.rankTo;
 
   let list = [...boosts];
   if (gameFilter !== "all") list = list.filter(b => b.game === gameFilter);
@@ -474,16 +565,24 @@ export default function Boosts() {
       b.description.toLowerCase().includes(q)
     );
   }
+  if (filters.budgetRange[0] > 0 || filters.budgetRange[1] < MAX_BUDGET) {
+    list = list.filter(b => {
+      const n = parseFloat(b.budget);
+      return n >= filters.budgetRange[0] && (filters.budgetRange[1] >= MAX_BUDGET || n <= filters.budgetRange[1]);
+    });
+  }
+  if (filters.rankFrom) list = list.filter(b => b.currentElo === filters.rankFrom);
+  if (filters.rankTo) list = list.filter(b => b.desiredElo === filters.rankTo);
   list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   if (!user) return null;
 
-  const pageBg     = isDark ? "#111111" : "#f5f5f4";
+  const pageBg = isDark ? "#111111" : "#f5f5f4";
   const textPrimary = isDark ? "#f0f0ee" : "#131415";
-  const textMuted   = isDark ? "rgba(240,240,238,0.4)" : "#666660";
+  const textMuted = isDark ? "rgba(240,240,238,0.4)" : "#666660";
   const borderColor = isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.08)";
-  const btnBg       = isDark ? "#f0f0ee" : "#131415";
-  const btnText     = isDark ? "#111" : "#fff";
+  const btnBg = isDark ? "#f0f0ee" : "#131415";
+  const btnText = isDark ? "#111" : "#fff";
   const tabActiveBg = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)";
   const tabInactiveColor = isDark ? "rgba(240,240,238,0.4)" : "#666660";
 
@@ -494,43 +593,76 @@ export default function Boosts() {
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 20px 48px" }}>
 
         {/* ── Top bar ── */}
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          borderBottom: `1px solid ${borderColor}`, paddingBottom: 0, marginBottom: 24,
-        }}>
-          {/* Game filter tabs with logos */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: `1px solid ${borderColor}`, marginBottom: 24 }}>
+
+          {/* Left: game tabs */}
           <div style={{ display: "flex", gap: 4, padding: "10px 0" }}>
             {GAME_TABS.map(tab => {
               const active = gameFilter === tab.id;
               const gameCol = tab.id !== "all" ? GAME_COLORS[tab.id] : null;
               return (
-                <button
-                  key={tab.id}
-                  onClick={() => setGameFilter(tab.id)}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 7,
-                    height: 34, padding: "0 13px", borderRadius: 20, border: "none",
-                    cursor: "pointer", transition: "all 0.15s",
-                    background: active ? tabActiveBg : "transparent",
-                    color: active
-                      ? (gameCol ? gameCol.accent : textPrimary)
-                      : tabInactiveColor,
-                    fontFamily: "var(--app-font-sans)", fontWeight: active ? 600 : 400, fontSize: 13,
-                  }}
-                  onMouseEnter={e => !active && (e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)")}
-                  onMouseLeave={e => !active && (e.currentTarget.style.background = "transparent")}
+                <button key={tab.id} onClick={() => setGameFilter(tab.id)} style={{
+                  display: "flex", alignItems: "center", gap: 6,
+                  height: 34, padding: "0 11px", borderRadius: 20, border: "none",
+                  cursor: "pointer", transition: "all 0.15s",
+                  background: active ? tabActiveBg : "transparent",
+                  color: active ? (gameCol ? gameCol.accent : textPrimary) : tabInactiveColor,
+                  fontFamily: "var(--app-font-sans)", fontWeight: active ? 600 : 400, fontSize: 13,
+                }}
+                onMouseEnter={e => !active && (e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)")}
+                onMouseLeave={e => !active && (e.currentTarget.style.background = "transparent")}
                 >
-                  <GameTabIcon id={tab.id} size={16}/>
+                  {tab.id === "all" ? (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                      <rect x="2" y="2" width="9" height="9" rx="2"/><rect x="13" y="2" width="9" height="9" rx="2" opacity="0.6"/>
+                      <rect x="2" y="13" width="9" height="9" rx="2" opacity="0.6"/><rect x="13" y="13" width="9" height="9" rx="2"/>
+                    </svg>
+                  ) : (
+                    <img src={GAME_LOGO[tab.id]} alt={tab.label} style={{ width: 16, height: 16, objectFit: "contain", borderRadius: 3, opacity: active ? 1 : 0.6 }}/>
+                  )}
                   {tab.label}
                 </button>
               );
             })}
           </div>
 
-          {/* New request button */}
-          <button
-            onClick={() => setShowCreate(true)}
-            style={{
+          {/* Right: filter + new request */}
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            {/* Filter button with dropdown */}
+            <div ref={filterBtnRef} style={{ position: "relative" }}>
+              <button onClick={() => setShowFilters(v => !v)} style={{
+                height: 34, padding: "0 13px", borderRadius: 8, cursor: "pointer",
+                display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600,
+                fontFamily: "var(--app-font-sans)", transition: "all 0.12s", border: "none",
+                background: hasActiveFilters
+                  ? (isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.1)")
+                  : (showFilters ? (isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.07)") : (isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)")),
+                color: hasActiveFilters ? textPrimary : textMuted,
+                outline: hasActiveFilters ? `1px solid ${isDark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.15)"}` : "none",
+              }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                </svg>
+                {isRu ? "Фильтры" : "Filters"}
+                {hasActiveFilters && (
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: isDark ? "#f0f0ee" : "#131415" }}/>
+                )}
+              </button>
+
+              {showFilters && (
+                <FilterPanel
+                  onClose={() => setShowFilters(false)}
+                  filters={filters}
+                  setFilters={f => { setFilters(f); setShowFilters(false); }}
+                  gameFilter={gameFilter}
+                  isDark={isDark}
+                  isRu={isRu}
+                />
+              )}
+            </div>
+
+            {/* New request */}
+            <button onClick={() => setShowCreate(true)} style={{
               height: 34, padding: "0 15px", borderRadius: 8,
               background: btnBg, border: "none", cursor: "pointer",
               color: btnText, fontFamily: "var(--app-font-sans)", fontWeight: 600, fontSize: 13,
@@ -538,49 +670,82 @@ export default function Boosts() {
             }}
             onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
             onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            {isRu ? "Новая заявка" : "New Request"}
-          </button>
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              {isRu ? "Новая заявка" : "New Request"}
+            </button>
+          </div>
         </div>
 
-        {/* Active search chip */}
-        {search && (
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18 }}>
-            <span style={{ fontSize: 12, color: textMuted }}>{isRu ? `${list.length} по запросу` : `${list.length} for`}</span>
-            <span style={{ display: "flex", alignItems: "center", gap: 5, background: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)", borderRadius: 20, padding: "3px 10px 3px 12px", fontSize: 12, color: textPrimary }}>
-              «{search}»
-              <button onClick={() => { setSearch(""); SearchContext.emit(""); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, color: textMuted, display: "flex" }}>
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        {/* Active filter chips row */}
+        {(search || hasActiveFilters) && (
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 18, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 12, color: textMuted }}>{list.length} {isRu ? "заявок" : "results"}</span>
+            {search && (
+              <span style={{ display: "flex", alignItems: "center", gap: 5, background: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)", borderRadius: 20, padding: "3px 10px 3px 12px", fontSize: 12, color: textPrimary }}>
+                «{search}»
+                <button onClick={() => { setSearch(""); SearchContext.emit(""); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, color: textMuted, display: "flex" }}>
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </span>
+            )}
+            {(filters.budgetRange[0] > 0 || filters.budgetRange[1] < MAX_BUDGET) && (
+              <span style={{ display: "flex", alignItems: "center", gap: 5, background: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)", borderRadius: 20, padding: "3px 10px 3px 12px", fontSize: 12, color: textPrimary }}>
+                ${filters.budgetRange[0]}–{filters.budgetRange[1] >= MAX_BUDGET ? `${MAX_BUDGET}+` : filters.budgetRange[1]}
+                <button onClick={() => setFilters(p => ({ ...p, budgetRange: [0, MAX_BUDGET] }))} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, color: textMuted, display: "flex" }}>
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </span>
+            )}
+            {filters.rankFrom && (
+              <span style={{ display: "flex", alignItems: "center", gap: 5, background: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)", borderRadius: 20, padding: "3px 10px 3px 12px", fontSize: 12, color: textPrimary }}>
+                {isRu ? "От:" : "From:"} {filters.rankFrom}
+                <button onClick={() => setFilters(p => ({ ...p, rankFrom: "" }))} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, color: textMuted, display: "flex" }}>
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </span>
+            )}
+            {filters.rankTo && (
+              <span style={{ display: "flex", alignItems: "center", gap: 5, background: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)", borderRadius: 20, padding: "3px 10px 3px 12px", fontSize: 12, color: textPrimary }}>
+                {isRu ? "До:" : "To:"} {filters.rankTo}
+                <button onClick={() => setFilters(p => ({ ...p, rankTo: "" }))} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, color: textMuted, display: "flex" }}>
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </span>
+            )}
+            {hasActiveFilters && (
+              <button onClick={() => setFilters(DEFAULT_FILTERS)} style={{ fontSize: 11, color: textMuted, background: "none", border: "none", cursor: "pointer", padding: "2px 6px", fontFamily: "var(--app-font-sans)" }}>
+                {isRu ? "Сбросить всё" : "Clear all"}
               </button>
-            </span>
+            )}
           </div>
         )}
 
-        {/* ── Grid — 4 columns, Mobbin exact ── */}
+        {/* ── Grid ── */}
         {list.length === 0 ? (
           <div style={{ textAlign: "center", padding: "100px 24px", borderRadius: 18, background: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.03)", border: `1px solid ${borderColor}` }}>
-            <div style={{ fontSize: 40, marginBottom: 14 }}>{search || gameFilter !== "all" ? "🔍" : "🎮"}</div>
+            <div style={{ fontSize: 40, marginBottom: 14 }}>{search || gameFilter !== "all" || hasActiveFilters ? "🔍" : "🎮"}</div>
             <div style={{ fontSize: 17, fontWeight: 600, color: textPrimary, marginBottom: 8 }}>
-              {search || gameFilter !== "all" ? (isRu ? "Ничего не найдено" : "No results") : (isRu ? "Заявок пока нет" : "No requests yet")}
+              {search || gameFilter !== "all" || hasActiveFilters ? (isRu ? "Ничего не найдено" : "No results") : (isRu ? "Заявок пока нет" : "No requests yet")}
             </div>
             <div style={{ fontSize: 13, color: textMuted, marginBottom: 22 }}>
-              {(search || gameFilter !== "all") ? (isRu ? "Попробуйте другой запрос или сбросьте фильтр" : "Try a different search or clear filters") : (isRu ? "Создайте первую заявку" : "Post your first boost request")}
+              {(search || gameFilter !== "all" || hasActiveFilters) ? (isRu ? "Попробуйте другой запрос или сбросьте фильтры" : "Try a different search or clear filters") : (isRu ? "Создайте первую заявку" : "Post your first boost request")}
             </div>
-            {!search && gameFilter === "all" && (
+            {hasActiveFilters && (
+              <button onClick={() => setFilters(DEFAULT_FILTERS)} style={{ height: 36, padding: "0 16px", borderRadius: 9, background: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.07)", border: "none", cursor: "pointer", color: textPrimary, fontFamily: "var(--app-font-sans)", fontWeight: 600, fontSize: 13, marginRight: 8 }}>
+                {isRu ? "Сбросить фильтры" : "Clear filters"}
+              </button>
+            )}
+            {!search && gameFilter === "all" && !hasActiveFilters && (
               <button onClick={() => setShowCreate(true)} style={{ height: 38, padding: "0 18px", borderRadius: 9, background: btnBg, border: "none", cursor: "pointer", color: btnText, fontFamily: "var(--app-font-sans)", fontWeight: 600, fontSize: 13 }}>
                 {isRu ? "Создать заявку" : "Post request"}
               </button>
             )}
           </div>
         ) : (
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: 20,
-          }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20 }}>
             {list.map(b => (
               <BoostCard key={b.id} boost={b} isDark={isDark} onClick={() => navigate(`/boosts/${b.id}`)}/>
             ))}
