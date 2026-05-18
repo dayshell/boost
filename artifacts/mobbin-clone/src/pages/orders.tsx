@@ -22,6 +22,7 @@ export interface Boost {
 }
 
 const GAMES = ["CS2", "Dota 2", "Valorant"] as const;
+const USD_TO_RUB = 90;
 
 const GAME_COLORS: Record<string, { accent: string; dim: string }> = {
   "CS2":      { accent: "#ffab00", dim: "rgba(255,171,0,0.18)" },
@@ -160,12 +161,15 @@ function GameLogoImg({ game, size = 32 }: { game: string; size?: number }) {
 }
 
 /* ── Boost card — Mobbin structure ───────────────── */
-function BoostCard({ boost, onClick, isDark }: { boost: Boost; onClick: () => void; isDark: boolean }) {
+function BoostCard({ boost, onClick, isDark, isRu }: { boost: Boost; onClick: () => void; isDark: boolean; isRu: boolean }) {
   const [hov, setHov] = useState(false);
   const fresh = isNew(boost.createdAt);
   const cardBg = isDark ? "#252525" : "#e8e8e6";
   const textPrimary = isDark ? "#f0f0ee" : "#131415";
   const textSecondary = isDark ? "rgba(240,240,238,0.45)" : "#666660";
+  const budgetDisplay = isRu
+    ? `₽${Math.round(Number(boost.budget) * USD_TO_RUB).toLocaleString("ru-RU")}`
+    : `$${Number(boost.budget).toFixed(0)}`;
 
   return (
     <div onClick={onClick} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)} style={{ cursor: "pointer" }}>
@@ -176,8 +180,8 @@ function BoostCard({ boost, onClick, isDark }: { boost: Boost; onClick: () => vo
         {fresh && (
           <div style={{ position: "absolute", top: 16, left: 16, background: "#ffffff", color: "#111111", fontSize: 10, fontWeight: 700, letterSpacing: "0.04em", borderRadius: 6, padding: "3px 8px", fontFamily: "var(--app-font-sans)" }}>New</div>
         )}
-        <div style={{ position: "absolute", top: 16, right: 16, width: 26, height: 26, borderRadius: 7, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", opacity: hov ? 1 : 0, transition: "opacity 0.15s" }}>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        <div style={{ position: "absolute", top: 16, right: 16, background: "#ffffff", borderRadius: 7, padding: "3px 9px", fontFamily: "var(--app-font-sans)", fontSize: 11, fontWeight: 700, color: "#111111", letterSpacing: "0.01em", fontVariantNumeric: "tabular-nums" }}>
+          {budgetDisplay}
         </div>
       </div>
       <div style={{ padding: "11px 4px 0", display: "flex", alignItems: "flex-start", gap: 10 }}>
@@ -189,10 +193,6 @@ function BoostCard({ boost, onClick, isDark }: { boost: Boost; onClick: () => vo
           <div style={{ fontSize: 11, color: textSecondary, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", lineHeight: 1.45 }}>
             {boost.description || `${boost.currentElo} → ${boost.desiredElo}`}
           </div>
-        </div>
-        <div style={{ flexShrink: 0, textAlign: "right", paddingTop: 1 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: textPrimary, lineHeight: 1.3 }}>${Number(boost.budget).toFixed(0)}</div>
-          <div style={{ fontSize: 10, color: textSecondary, lineHeight: 1.3 }}>budget</div>
         </div>
       </div>
     </div>
@@ -315,20 +315,30 @@ function FilterPanel({ onClose, filters, setFilters, isDark, isRu }: {
       {/* Game selector */}
       <div style={{ marginBottom: 20 }}>
         <span style={lbl as React.CSSProperties}>{isRu ? "Игра" : "Game"}</span>
-        <div style={{ display: "flex", gap: 6 }}>
+        <div style={{ display: "flex", gap: 5 }}>
           {(["all", ...GAMES] as const).map(g => {
             const active = local.filterGame === g;
             const col = g !== "all" ? GAME_COLORS[g] : null;
             return (
               <button key={g} onClick={() => setLocal(p => ({ ...p, filterGame: g, rankFrom: "", rankTo: "" }))}
                 style={{
-                  flex: 1, height: 34, borderRadius: 8, border: "none", cursor: "pointer",
+                  flex: 1, height: 28, borderRadius: 7, border: "none", cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
                   background: active ? (col ? col.dim : (isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.1)")) : chipBg,
                   color: active ? (col ? col.accent : textPrimary) : textMuted,
-                  fontFamily: "var(--app-font-sans)", fontWeight: active ? 700 : 400, fontSize: 12,
+                  fontFamily: "var(--app-font-sans)", fontWeight: active ? 700 : 400, fontSize: 11,
                   transition: "all 0.12s",
                   outline: active ? `1.5px solid ${col ? col.accent : (isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.18)")}` : "none",
+                  padding: "0 6px",
                 }}>
+                {g === "all" ? (
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
+                    <rect x="2" y="2" width="9" height="9" rx="2"/><rect x="13" y="2" width="9" height="9" rx="2" opacity="0.6"/>
+                    <rect x="2" y="13" width="9" height="9" rx="2" opacity="0.6"/><rect x="13" y="13" width="9" height="9" rx="2"/>
+                  </svg>
+                ) : (
+                  <img src={GAME_LOGO[g]} alt={g} style={{ width: 13, height: 13, objectFit: "contain", borderRadius: 2, opacity: active ? 1 : 0.55, flexShrink: 0 }}/>
+                )}
                 {g === "all" ? (isRu ? "Все" : "All") : g}
               </button>
             );
@@ -341,7 +351,10 @@ function FilterPanel({ onClose, filters, setFilters, isDark, isRu }: {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
           <span style={lbl as React.CSSProperties}>{isRu ? "Бюджет" : "Budget"}</span>
           <span style={{ fontSize: 12, fontWeight: 600, color: textPrimary }}>
-            ${local.budgetRange[0]} — {local.budgetRange[1] >= MAX_BUDGET ? `$${MAX_BUDGET}+` : `$${local.budgetRange[1]}`}
+            {isRu
+              ? `₽${local.budgetRange[0] * USD_TO_RUB} — ${local.budgetRange[1] >= MAX_BUDGET ? `₽${MAX_BUDGET * USD_TO_RUB}+` : `₽${local.budgetRange[1] * USD_TO_RUB}`}`
+              : `$${local.budgetRange[0]} — ${local.budgetRange[1] >= MAX_BUDGET ? `$${MAX_BUDGET}+` : `$${local.budgetRange[1]}`}`
+            }
           </span>
         </div>
         <RangeSlider
@@ -351,8 +364,8 @@ function FilterPanel({ onClose, filters, setFilters, isDark, isRu }: {
           isDark={isDark} accentColor={accent}
         />
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
-          <span style={{ fontSize: 10, color: textMuted }}>$0</span>
-          <span style={{ fontSize: 10, color: textMuted }}>${MAX_BUDGET}+</span>
+          <span style={{ fontSize: 10, color: textMuted }}>{isRu ? "₽0" : "$0"}</span>
+          <span style={{ fontSize: 10, color: textMuted }}>{isRu ? `₽${MAX_BUDGET * USD_TO_RUB}+` : `$${MAX_BUDGET}+`}</span>
         </div>
       </div>
 
