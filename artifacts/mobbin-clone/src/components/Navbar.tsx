@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { useLang } from "../LangContext";
 import { useTheme } from "../ThemeContext";
 import { useAuth } from "../AuthContext";
+import { useSiteSettings } from "../SiteSettingsContext";
 import { translations } from "../i18n";
 import { useLocation } from "wouter";
 
@@ -474,18 +475,24 @@ function BecomeBoosterModal({ onClose }: { onClose: () => void }) {
 }
 
 function BoostLogo({ size = 30 }: { size?: number }) {
+  const { settings } = useSiteSettings();
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 9, textDecoration: "none" }}>
-      <svg width={size} height={size} viewBox="0 0 40 40" fill="none" style={{ flexShrink: 0 }}>
-        <rect width="40" height="40" rx="11" fill="#0f0f0f" />
-        <text x="20" y="29" textAnchor="middle" fontFamily="Georgia, 'Times New Roman', serif"
-          fontWeight="bold" fontSize="26" fill="white" letterSpacing="-1">B</text>
-      </svg>
+      <div style={{
+        width: size, height: size, borderRadius: Math.round(size * 0.275),
+        background: settings.primaryColor, flexShrink: 0,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontFamily: "Georgia, 'Times New Roman', serif", fontWeight: "bold",
+        fontSize: Math.round(size * 0.65), color: "white",
+        letterSpacing: "-1px",
+      }}>
+        {settings.logoLetter}
+      </div>
       <span style={{
         fontFamily: "var(--app-font-sans)", fontWeight: 700,
         fontSize: Math.round(size * 0.6), letterSpacing: "-0.01em",
         color: "var(--text-primary)", lineHeight: 1,
-      }}>Boost</span>
+      }}>{settings.siteName}</span>
     </div>
   );
 }
@@ -694,6 +701,14 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
         label={isRu ? "Настройки" : "Settings"}
         onClick={() => { navigate("/settings"); onClose(); }}
       />
+      {user?.isAdmin && (
+        <MenuItem
+          icon={<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffab00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>}
+          label="Admin Panel"
+          arrow
+          onClick={() => { navigate("/admin"); onClose(); }}
+        />
+      )}
 
       {divider}
 

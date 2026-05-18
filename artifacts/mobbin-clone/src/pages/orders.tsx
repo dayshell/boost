@@ -5,6 +5,7 @@ import { useTheme } from "../ThemeContext";
 import { useLocation } from "wouter";
 import Navbar, { SearchContext } from "../components/Navbar";
 import { createPortal } from "react-dom";
+import { useToast } from "@/hooks/use-toast";
 
 export interface Boost {
   id: string;
@@ -162,7 +163,7 @@ function GameLogoImg({ game, size = 32 }: { game: string; size?: number }) {
 }
 
 /* ── Boost card — Mobbin structure ───────────────── */
-function BoostCard({ boost, onClick, isDark, isRu }: { boost: Boost; onClick: () => void; isDark: boolean; isRu: boolean }) {
+function BoostCard({ boost, onClick, isDark, isRu, isAdmin, onDelete }: { boost: Boost; onClick: () => void; isDark: boolean; isRu: boolean; isAdmin?: boolean; onDelete?: (id: string) => void }) {
   const [hov, setHov] = useState(false);
   const fresh = isNew(boost.createdAt);
   const col = GAME_COLORS[boost.game];
@@ -173,11 +174,9 @@ function BoostCard({ boost, onClick, isDark, isRu }: { boost: Boost; onClick: ()
 
   return (
     <div
-      onClick={onClick}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
-        cursor: "pointer",
         background: cardBg,
         borderRadius: 20,
         overflow: "hidden",
@@ -186,6 +185,27 @@ function BoostCard({ boost, onClick, isDark, isRu }: { boost: Boost; onClick: ()
         position: "relative",
       }}
     >
+      {isAdmin && onDelete && (
+        <button
+          onClick={e => { e.stopPropagation(); onDelete(boost.id); }}
+          title="Удалить буст"
+          style={{
+            position: "absolute", top: 10, right: 10, zIndex: 10,
+            width: 28, height: 28, borderRadius: 8, border: "none", cursor: "pointer",
+            background: "rgba(248,113,113,0.15)", color: "#f87171",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            transition: "background 0.15s",
+            opacity: hov ? 1 : 0,
+          }}
+          onMouseEnter={e => (e.currentTarget.style.background = "rgba(248,113,113,0.3)")}
+          onMouseLeave={e => (e.currentTarget.style.background = "rgba(248,113,113,0.15)")}
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+          </svg>
+        </button>
+      )}
+      <div onClick={onClick} style={{ cursor: "pointer" }}>
       {/* Header — inside the card */}
       <div style={{ padding: "16px 16px 12px", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -237,6 +257,7 @@ function BoostCard({ boost, onClick, isDark, isRu }: { boost: Boost; onClick: ()
       {/* Preview image — fills bottom of card */}
       <div style={{ margin: "0 10px 10px", borderRadius: 14, overflow: "hidden", aspectRatio: "16/11" }}>
         <CardPreview boost={boost}/>
+      </div>
       </div>
     </div>
   );
@@ -844,10 +865,19 @@ export default function Boosts() {
   const { lang } = useLang();
   const { theme } = useTheme();
   const [, navigate] = useLocation();
+  const { toast } = useToast();
   const isRu = lang === "ru";
   const isDark = theme === "dark" || (theme === "system" && typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  const isAdmin = user?.isAdmin ?? false;
 
   const [boosts, setBoosts] = useState<Boost[]>(loadBoosts);
+
+  function handleDeleteBoost(id: string) {
+    const updated = boosts.filter(b => b.id !== id);
+    setBoosts(updated);
+    saveBoosts(updated);
+    toast({ title: "Буст удалён", description: `ID: ${id}` });
+  }
   const [gameFilter, setGameFilter] = useState<GameFilter>("all");
   const [showCreate, setShowCreate] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -1095,7 +1125,7 @@ export default function Boosts() {
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20 }}>
             {list.map(b => (
-              <BoostCard key={b.id} boost={b} isDark={isDark} isRu={isRu} onClick={() => navigate(`/boosts/${b.id}`)}/>
+              <BoostCard key={b.id} boost={b} isDark={isDark} isRu={isRu} onClick={() => navigate(`/boosts/${b.id}`)} isAdmin={isAdmin} onDelete={handleDeleteBoost}/>
             ))}
           </div>
         )}

@@ -4,6 +4,7 @@ interface User {
   email: string;
   name: string;
   initial: string;
+  isAdmin: boolean;
 }
 
 interface AuthContextType {
@@ -18,20 +19,29 @@ const AuthContext = createContext<AuthContextType>({
   logout: () => {},
 });
 
+function buildUser(email: string): User {
+  const name = email.split("@")[0] || "User";
+  const initial = name.charAt(0).toUpperCase();
+  const isAdmin = email === "admin@boost.com";
+  return { email, name, initial, isAdmin };
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
     try {
       const stored = localStorage.getItem("boost_user");
-      return stored ? JSON.parse(stored) : null;
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return { ...parsed, isAdmin: parsed.email === "admin@boost.com" };
+      }
+      return null;
     } catch {
       return null;
     }
   });
 
   function login(email: string) {
-    const name = email.split("@")[0] || "User";
-    const initial = name.charAt(0).toUpperCase();
-    const u: User = { email, name, initial };
+    const u = buildUser(email);
     setUser(u);
     localStorage.setItem("boost_user", JSON.stringify(u));
   }
