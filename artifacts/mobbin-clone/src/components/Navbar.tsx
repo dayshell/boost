@@ -573,7 +573,6 @@ export default function Navbar() {
   }
 
   const navLinks = [
-    { label: tr.pricing, href: "#pricing" },
     { label: tr.signIn, href: "/login" },
   ];
 
