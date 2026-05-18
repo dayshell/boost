@@ -7,8 +7,8 @@ import Home from "@/pages/home";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
 import Settings from "@/pages/settings";
-import Orders from "@/pages/orders";
-import OrderDetail from "@/pages/order-detail";
+import Boosts from "@/pages/orders";
+import BoostDetail from "@/pages/order-detail";
 import { LangProvider } from "./LangContext";
 import { ThemeProvider } from "./ThemeContext";
 import { AuthProvider } from "./AuthContext";
@@ -21,8 +21,8 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
-      <Route path="/orders" component={Orders} />
-      <Route path="/orders/:id" component={OrderDetail} />
+      <Route path="/boosts" component={Boosts} />
+      <Route path="/boosts/:id" component={BoostDetail} />
       <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>

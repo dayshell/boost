@@ -356,11 +356,12 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
               key={l}
               onClick={() => setLang(l)}
               style={{
-                height: 28, padding: "0 10px", borderRadius: 9999, border: "none", cursor: "pointer",
+                width: 36, height: 28, borderRadius: 9999, border: "none", cursor: "pointer",
                 fontFamily: "var(--app-font-sans)", fontWeight: 600, fontSize: 11,
                 background: lang === l ? "rgba(255,255,255,0.15)" : "transparent",
                 color: lang === l ? itemColor : mutedColor,
                 transition: "all 0.15s",
+                display: "flex", alignItems: "center", justifyContent: "center",
               }}
             >
               {l.toUpperCase()}

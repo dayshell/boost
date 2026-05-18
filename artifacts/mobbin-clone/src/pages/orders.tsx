@@ -5,7 +5,7 @@ import { useLocation } from "wouter";
 import Navbar, { SearchContext } from "../components/Navbar";
 import { createPortal } from "react-dom";
 
-export interface Order {
+export interface Boost {
   id: string;
   authorName: string;
   authorEmail: string;
@@ -28,43 +28,128 @@ const GAME_COLORS: Record<string, { bg: string; text: string }> = {
   "Valorant": { bg: "rgba(255,70,85,0.12)",  text: "#ff4655" },
 };
 
-const GAME_ICONS: Record<string, React.ReactNode> = {
-  "CS2": (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-      <rect width="24" height="24" rx="6" fill="rgba(255,171,0,0.18)"/>
-      <text x="12" y="16.5" textAnchor="middle" fill="#ffab00" fontSize="8" fontWeight="800" fontFamily="Arial">CS2</text>
-    </svg>
-  ),
-  "Dota 2": (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-      <rect width="24" height="24" rx="6" fill="rgba(218,55,55,0.18)"/>
-      <text x="12" y="16" textAnchor="middle" fill="#e05050" fontSize="7" fontWeight="800" fontFamily="Arial">DOTA</text>
-    </svg>
-  ),
-  "Valorant": (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-      <rect width="24" height="24" rx="6" fill="rgba(255,70,85,0.18)"/>
-      <path d="M5 17L12 5l7 12H5z" fill="#ff4655" opacity="0.9"/>
-    </svg>
-  ),
-};
+/* ── Seed data ──────────────────────────────────── */
+const SEED_BOOSTS: Boost[] = [
+  {
+    id: "seed-1",
+    authorName: "Артём K.",
+    authorEmail: "artem@example.com",
+    game: "CS2",
+    currentElo: "Silver 3",
+    desiredElo: "Gold Nova 2",
+    contact: "@artem_boost",
+    description: "Аккаунт чистый, без банов. Хочу побыстрее — готов к овертайму. Играю на ноутбуке, поэтому пингует иногда.",
+    timeFrom: "10:00",
+    timeTo: "23:00",
+    budget: "35.00",
+    createdAt: new Date(Date.now() - 1000 * 60 * 18).toISOString(),
+  },
+  {
+    id: "seed-2",
+    authorName: "Maksim_D",
+    authorEmail: "maks@example.com",
+    game: "Valorant",
+    currentElo: "Iron 2",
+    desiredElo: "Bronze 3",
+    contact: "discord: maks#4421",
+    description: "Нужно поднять до Bronze 3 как можно скорее, платить готов сразу после буста.",
+    timeFrom: "18:00",
+    timeTo: "02:00",
+    budget: "28.00",
+    createdAt: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
+  },
+  {
+    id: "seed-3",
+    authorName: "SerpentX",
+    authorEmail: "serp@example.com",
+    game: "Dota 2",
+    currentElo: "1 800 MMR",
+    desiredElo: "2 500 MMR",
+    contact: "@serpentx_dota",
+    description: "",
+    timeFrom: "09:00",
+    timeTo: "21:00",
+    budget: "60.00",
+    createdAt: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
+  },
+  {
+    id: "seed-4",
+    authorName: "nika_val",
+    authorEmail: "nika@example.com",
+    game: "Valorant",
+    currentElo: "Silver 1",
+    desiredElo: "Platinum 1",
+    contact: "t.me/nika_boost",
+    description: "Хочу в платину до конца сезона. Смотреть не буду, просто хочу результат. Аккаунт с 300+ матчами.",
+    timeFrom: "11:00",
+    timeTo: "20:00",
+    budget: "90.00",
+    createdAt: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
+  },
+  {
+    id: "seed-5",
+    authorName: "ProPlayerZero",
+    authorEmail: "zero@example.com",
+    game: "CS2",
+    currentElo: "MG1",
+    desiredElo: "DMG",
+    contact: "@zero_cs2",
+    description: "Аккаунт старый, Prime статус есть. Играть желательно в пиковые часы.",
+    timeFrom: "20:00",
+    timeTo: "01:00",
+    budget: "50.00",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
+  },
+  {
+    id: "seed-6",
+    authorName: "ivannn99",
+    authorEmail: "ivan99@example.com",
+    game: "Dota 2",
+    currentElo: "3 100 MMR",
+    desiredElo: "4 000 MMR",
+    contact: "vk.com/ivannn99",
+    description: "900 MMR разрыв, понимаю что дорого. Бюджет обсуждаем.",
+    timeFrom: "14:00",
+    timeTo: "22:00",
+    budget: "120.00",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString(),
+  },
+  {
+    id: "seed-7",
+    authorName: "DimaTwitch",
+    authorEmail: "dima@example.com",
+    game: "CS2",
+    currentElo: "GN4",
+    desiredElo: "Master Guardian Elite",
+    contact: "discord: dima#7731",
+    description: "Стримлю иногда — желательно не удалять игровую историю.",
+    timeFrom: "00:00",
+    timeTo: "06:00",
+    budget: "42.00",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString(),
+  },
+];
 
-function loadOrders(): Order[] {
+function loadBoosts(): Boost[] {
   try {
-    return JSON.parse(localStorage.getItem("boost_orders") || "[]");
-  } catch { return []; }
+    const raw = localStorage.getItem("boost_boosts");
+    if (raw) return JSON.parse(raw);
+    // First load — seed test data
+    localStorage.setItem("boost_boosts", JSON.stringify(SEED_BOOSTS));
+    return SEED_BOOSTS;
+  } catch { return SEED_BOOSTS; }
 }
-function saveOrders(orders: Order[]) {
-  localStorage.setItem("boost_orders", JSON.stringify(orders));
+export function saveBoosts(boosts: Boost[]) {
+  localStorage.setItem("boost_boosts", JSON.stringify(boosts));
 }
 
-/* ── Create Order Modal ─────────────────────────── */
-function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreated: (o: Order) => void }) {
+/* ── Create Boost Modal ─────────────────────────── */
+function CreateBoostModal({ onClose, onCreated }: { onClose: () => void; onCreated: (b: Boost) => void }) {
   const { user } = useAuth();
   const { lang } = useLang();
   const isRu = lang === "ru";
 
-  const [game, setGame] = useState<Order["game"]>("CS2");
+  const [game, setGame] = useState<Boost["game"]>("CS2");
   const [currentElo, setCurrentElo] = useState("");
   const [desiredElo, setDesiredElo] = useState("");
   const [contact, setContact] = useState("");
@@ -94,7 +179,7 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
     if (!budget.trim()) err.budget = true;
     if (Object.keys(err).length) { setErrors(err); return; }
 
-    const order: Order = {
+    const boost: Boost = {
       id: Date.now().toString(),
       authorName: user?.name ?? "User",
       authorEmail: user?.email ?? "",
@@ -108,10 +193,10 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
       budget: budget.trim(),
       createdAt: new Date().toISOString(),
     };
-    const all = loadOrders();
-    all.unshift(order);
-    saveOrders(all);
-    onCreated(order);
+    const all = loadBoosts();
+    all.unshift(boost);
+    saveBoosts(all);
+    onCreated(boost);
     onClose();
   }
 
@@ -144,7 +229,7 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
         }}>
           <div>
             <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#f0f0ee", letterSpacing: "-0.02em" }}>
-              {isRu ? "Новый заказ" : "New Order"}
+              {isRu ? "Новая заявка на буст" : "New Boost Request"}
             </h2>
             <p style={{ margin: "4px 0 0", fontSize: 13, color: "rgba(240,240,238,0.4)" }}>
               {isRu ? "Заполните детали буста" : "Fill in boost details"}
@@ -167,8 +252,7 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
 
         {/* Body */}
         <div style={{ padding: "20px 24px 24px", overflowY: "auto", display: "flex", flexDirection: "column", gap: 18 }}>
-
-          {/* Game selector */}
+          {/* Game */}
           <div>
             <label style={labelStyle}>{isRu ? "Игра" : "Game"}</label>
             <div style={{ display: "flex", gap: 8 }}>
@@ -227,7 +311,7 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
             </label>
             <input
               value={contact} onChange={e => { setContact(e.target.value); setErrors(p => ({ ...p, contact: false })); }}
-              placeholder={isRu ? "Telegram, Discord, VK…" : "Telegram, Discord, VK…"}
+              placeholder="Telegram, Discord, VK…"
               style={{ ...inputStyle, borderColor: errors.contact ? "#e05050" : "rgba(255,255,255,0.1)" }}
               onFocus={e => (e.target.style.borderColor = "rgba(255,255,255,0.3)")}
               onBlur={e => (e.target.style.borderColor = errors.contact ? "#e05050" : "rgba(255,255,255,0.1)")}
@@ -252,32 +336,19 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
           <div>
             <label style={labelStyle}>{isRu ? "Время буста (МСК)" : "Boost time (MSK)"}</label>
             <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: 10, alignItems: "center" }}>
-              <div style={{ position: "relative" }}>
-                <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontSize: 12, color: "rgba(240,240,238,0.35)", pointerEvents: "none" }}>
-                  {isRu ? "с" : "from"}
-                </span>
-                <input
-                  type="time" value={timeFrom} onChange={e => setTimeFrom(e.target.value)}
-                  style={{
-                    ...inputStyle, paddingLeft: timeFrom ? 36 : 14,
-                    colorScheme: "dark",
-                  }}
-                />
-              </div>
-              <span style={{ color: "rgba(240,240,238,0.3)", fontSize: 14 }}>—</span>
-              <div style={{ position: "relative" }}>
-                <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontSize: 12, color: "rgba(240,240,238,0.35)", pointerEvents: "none" }}>
-                  {isRu ? "до" : "to"}
-                </span>
-                <input
-                  type="time" value={timeTo} onChange={e => setTimeTo(e.target.value)}
-                  style={{
-                    ...inputStyle, paddingLeft: 36,
-                    colorScheme: "dark",
-                  }}
-                />
-              </div>
+              <input
+                type="time" value={timeFrom} onChange={e => setTimeFrom(e.target.value)}
+                style={{ ...inputStyle, colorScheme: "dark" }}
+              />
+              <span style={{ color: "rgba(240,240,238,0.3)", fontSize: 14, textAlign: "center" }}>—</span>
+              <input
+                type="time" value={timeTo} onChange={e => setTimeTo(e.target.value)}
+                style={{ ...inputStyle, colorScheme: "dark" }}
+              />
             </div>
+            <p style={{ margin: "6px 0 0", fontSize: 12, color: "rgba(240,240,238,0.3)" }}>
+              {isRu ? "Когда бустер может заходить в ваш аккаунт" : "When booster can access your account"}
+            </p>
           </div>
 
           {/* Budget */}
@@ -327,7 +398,7 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
             onMouseEnter={e => (e.currentTarget.style.opacity = "0.88")}
             onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
           >
-            {isRu ? "Создать заказ" : "Create Order"}
+            {isRu ? "Разместить заявку" : "Post Boost Request"}
           </button>
         </div>
       </div>
@@ -337,13 +408,25 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
   return createPortal(modal, document.body);
 }
 
-/* ── Order card ─────────────────────────────────── */
-function OrderCard({ order, onClick }: { order: Order; onClick: () => void }) {
+/* ── Boost card ─────────────────────────────────── */
+function BoostCard({ boost, onClick }: { boost: Boost; onClick: () => void }) {
   const { lang } = useLang();
   const isRu = lang === "ru";
   const [hov, setHov] = useState(false);
-  const col = GAME_COLORS[order.game];
-  const date = new Date(order.createdAt).toLocaleDateString(isRu ? "ru-RU" : "en-US", { day: "numeric", month: "short" });
+  const col = GAME_COLORS[boost.game];
+
+  const now = Date.now();
+  const created = new Date(boost.createdAt).getTime();
+  const diffMin = Math.round((now - created) / 60000);
+  let timeLabel: string;
+  if (diffMin < 1) timeLabel = isRu ? "только что" : "just now";
+  else if (diffMin < 60) timeLabel = isRu ? `${diffMin} мин. назад` : `${diffMin}m ago`;
+  else if (diffMin < 1440) {
+    const h = Math.round(diffMin / 60);
+    timeLabel = isRu ? `${h} ч. назад` : `${h}h ago`;
+  } else {
+    timeLabel = new Date(boost.createdAt).toLocaleDateString(isRu ? "ru-RU" : "en-US", { day: "numeric", month: "short" });
+  }
 
   return (
     <div
@@ -353,74 +436,75 @@ function OrderCard({ order, onClick }: { order: Order; onClick: () => void }) {
       style={{
         background: hov ? "#1c1c1c" : "#171717",
         border: `1px solid ${hov ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.07)"}`,
-        borderRadius: 16, padding: "20px 24px",
+        borderRadius: 16, padding: "18px 22px",
         cursor: "pointer", transition: "all 0.15s",
-        display: "flex", alignItems: "center", gap: 20,
+        display: "flex", alignItems: "center", gap: 18,
       }}
     >
-      {/* Game icon */}
+      {/* Game badge */}
       <div style={{
-        width: 48, height: 48, borderRadius: 12, flexShrink: 0,
+        width: 50, height: 50, borderRadius: 13, flexShrink: 0,
         background: col.bg,
         display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 11, fontWeight: 800, color: col.text, fontFamily: "var(--app-font-sans)",
-        letterSpacing: "0.02em",
       }}>
-        {order.game === "Valorant" ? (
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        {boost.game === "Valorant" ? (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M4 18L12 4l8 14H4z" fill={col.text} opacity="0.9"/>
           </svg>
+        ) : boost.game === "CS2" ? (
+          <span style={{ fontSize: 12, fontWeight: 800, color: col.text, fontFamily: "var(--app-font-sans)", letterSpacing: "-0.02em" }}>CS2</span>
         ) : (
-          <span>{order.game === "CS2" ? "CS2" : "D2"}</span>
+          <span style={{ fontSize: 11, fontWeight: 800, color: col.text, fontFamily: "var(--app-font-sans)" }}>D2</span>
         )}
       </div>
 
-      {/* Info */}
+      {/* Main info */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5, flexWrap: "wrap" }}>
           <span style={{ fontWeight: 700, fontSize: 15, color: "#f0f0ee" }}>
-            {order.authorName}
+            {boost.authorName}
           </span>
           <span style={{
             fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 20,
-            background: col.bg, color: col.text,
+            background: col.bg, color: col.text, flexShrink: 0,
           }}>
-            {order.game}
+            {boost.game}
           </span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "rgba(240,240,238,0.5)" }}>
-          <span>{order.currentElo}</span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        {/* Elo arrow */}
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
+          <span style={{ color: "rgba(240,240,238,0.45)", fontVariantNumeric: "tabular-nums" }}>{boost.currentElo}</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,238,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
           </svg>
-          <span style={{ color: "#f0f0ee", fontWeight: 600 }}>{order.desiredElo}</span>
+          <span style={{ color: col.text, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{boost.desiredElo}</span>
         </div>
       </div>
 
-      {/* Right */}
+      {/* Right: budget + time */}
       <div style={{ textAlign: "right", flexShrink: 0 }}>
-        <div style={{ fontSize: 18, fontWeight: 700, color: "#f0f0ee", fontVariantNumeric: "tabular-nums", marginBottom: 4 }}>
-          ${Number(order.budget).toFixed(2)}
+        <div style={{ fontSize: 18, fontWeight: 700, color: "#f0f0ee", fontVariantNumeric: "tabular-nums", marginBottom: 3 }}>
+          ${Number(boost.budget).toFixed(2)}
         </div>
-        <div style={{ fontSize: 11, color: "rgba(240,240,238,0.3)" }}>{date}</div>
+        <div style={{ fontSize: 11, color: "rgba(240,240,238,0.28)" }}>{timeLabel}</div>
       </div>
 
-      {/* Arrow */}
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,238,0.25)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      {/* Chevron */}
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,238,0.2)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
         <polyline points="9 18 15 12 9 6"/>
       </svg>
     </div>
   );
 }
 
-/* ── Orders page ────────────────────────────────── */
-export default function Orders() {
+/* ── Boosts page ────────────────────────────────── */
+export default function Boosts() {
   const { user } = useAuth();
   const { lang } = useLang();
   const [, navigate] = useLocation();
   const isRu = lang === "ru";
 
-  const [orders, setOrders] = useState<Order[]>(loadOrders);
+  const [boosts, setBoosts] = useState<Boost[]>(loadBoosts);
   const [showCreate, setShowCreate] = useState(false);
   const [search, setSearch] = useState(SearchContext.value);
 
@@ -433,17 +517,17 @@ export default function Orders() {
   }, []);
 
   const filtered = search.trim()
-    ? orders.filter(o => {
+    ? boosts.filter(b => {
         const q = search.toLowerCase();
         return (
-          o.game.toLowerCase().includes(q) ||
-          o.currentElo.toLowerCase().includes(q) ||
-          o.desiredElo.toLowerCase().includes(q) ||
-          o.authorName.toLowerCase().includes(q) ||
-          o.description.toLowerCase().includes(q)
+          b.game.toLowerCase().includes(q) ||
+          b.currentElo.toLowerCase().includes(q) ||
+          b.desiredElo.toLowerCase().includes(q) ||
+          b.authorName.toLowerCase().includes(q) ||
+          b.description.toLowerCase().includes(q)
         );
       })
-    : orders;
+    : boosts;
 
   if (!user) return null;
 
@@ -451,19 +535,18 @@ export default function Orders() {
     <div style={{ minHeight: "100dvh", background: "#111111", fontFamily: "var(--app-font-sans)" }}>
       <Navbar />
 
-      <div style={{ maxWidth: 760, margin: "0 auto", padding: "40px 24px" }}>
+      <div style={{ maxWidth: 780, margin: "0 auto", padding: "40px 24px" }}>
 
         {/* Page header */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 32, flexWrap: "wrap", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28, flexWrap: "wrap", gap: 16 }}>
           <div>
             <h1 style={{ margin: 0, fontSize: 26, fontWeight: 700, color: "#f0f0ee", letterSpacing: "-0.025em" }}>
-              {isRu ? "Заказы" : "Orders"}
+              {isRu ? "Заявки на буст" : "Boost Requests"}
             </h1>
             <p style={{ margin: "6px 0 0", fontSize: 14, color: "rgba(240,240,238,0.4)" }}>
-              {isRu
-                ? `${filtered.length} ${filtered.length === 1 ? "заказ" : "заказов"}`
-                : `${filtered.length} order${filtered.length !== 1 ? "s" : ""}`}
-              {search && ` — «${search}»`}
+              {search
+                ? (isRu ? `${filtered.length} по запросу «${search}»` : `${filtered.length} results for "${search}"`)
+                : (isRu ? `${filtered.length} активных заявок` : `${filtered.length} active requests`)}
             </p>
           </div>
           <button
@@ -481,15 +564,15 @@ export default function Orders() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
-            {isRu ? "Создать заказ" : "Create order"}
+            {isRu ? "Создать заявку" : "New Request"}
           </button>
         </div>
 
-        {/* Filter chips */}
+        {/* Active search chip */}
         {search && (
-          <div style={{ marginBottom: 20, display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 13, color: "rgba(240,240,238,0.4)" }}>
-              {isRu ? "Поиск:" : "Search:"}
+          <div style={{ marginBottom: 18, display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 13, color: "rgba(240,240,238,0.35)" }}>
+              {isRu ? "Фильтр:" : "Filter:"}
             </span>
             <span style={{
               display: "flex", alignItems: "center", gap: 6,
@@ -499,7 +582,7 @@ export default function Orders() {
               {search}
               <button onClick={() => { setSearch(""); SearchContext.emit(""); }} style={{
                 background: "none", border: "none", cursor: "pointer", padding: 0,
-                color: "rgba(240,240,238,0.5)", display: "flex",
+                color: "rgba(240,240,238,0.45)", display: "flex",
               }}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
                   <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -509,7 +592,7 @@ export default function Orders() {
           </div>
         )}
 
-        {/* Order list */}
+        {/* List */}
         {filtered.length === 0 ? (
           <div style={{
             textAlign: "center", padding: "80px 24px",
@@ -517,18 +600,14 @@ export default function Orders() {
             border: "1px solid rgba(255,255,255,0.06)",
             borderRadius: 20,
           }}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>
-              {search ? "🔍" : "📋"}
-            </div>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>{search ? "🔍" : "🎮"}</div>
             <div style={{ fontSize: 18, fontWeight: 700, color: "#f0f0ee", marginBottom: 8 }}>
-              {search
-                ? (isRu ? "Ничего не найдено" : "No results found")
-                : (isRu ? "Заказов пока нет" : "No orders yet")}
+              {search ? (isRu ? "Ничего не найдено" : "No results") : (isRu ? "Заявок пока нет" : "No requests yet")}
             </div>
             <div style={{ fontSize: 14, color: "rgba(240,240,238,0.4)", marginBottom: 24 }}>
               {search
                 ? (isRu ? "Попробуйте другой запрос" : "Try a different search")
-                : (isRu ? "Создайте первый заказ на буст" : "Create your first boost order")}
+                : (isRu ? "Создайте первую заявку на буст" : "Post your first boost request")}
             </div>
             {!search && (
               <button onClick={() => setShowCreate(true)} style={{
@@ -536,27 +615,23 @@ export default function Orders() {
                 background: "#f0f0ee", border: "none", cursor: "pointer",
                 color: "#111", fontFamily: "var(--app-font-sans)", fontWeight: 600, fontSize: 14,
               }}>
-                {isRu ? "Создать заказ" : "Create order"}
+                {isRu ? "Создать заявку" : "Post request"}
               </button>
             )}
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {filtered.map(order => (
-              <OrderCard
-                key={order.id}
-                order={order}
-                onClick={() => navigate(`/orders/${order.id}`)}
-              />
+            {filtered.map(b => (
+              <BoostCard key={b.id} boost={b} onClick={() => navigate(`/boosts/${b.id}`)} />
             ))}
           </div>
         )}
       </div>
 
       {showCreate && (
-        <CreateOrderModal
+        <CreateBoostModal
           onClose={() => setShowCreate(false)}
-          onCreated={o => setOrders(prev => [o, ...prev])}
+          onCreated={b => setBoosts(prev => [b, ...prev])}
         />
       )}
     </div>
