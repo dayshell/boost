@@ -306,7 +306,7 @@ function FilterPanel({ onClose, filters, setFilters, isDark, isRu }: {
 
   return (
     <div ref={panelRef} style={{
-      position: "absolute", top: "calc(100% + 6px)", left: 0,
+      position: "absolute", top: "calc(100% + 6px)", right: 0,
       width: 340, background: bg, border: `1px solid ${border}`,
       borderRadius: 14, boxShadow: "0 12px 40px rgba(0,0,0,0.3)",
       zIndex: 200, padding: "18px 18px 14px", fontFamily: "var(--app-font-sans)",
