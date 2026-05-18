@@ -139,43 +139,73 @@ const METHOD_ICONS: Record<DepositMethod, React.ReactNode> = {
 function DepositRow({ deposit, isRu }: { deposit: Deposit; isRu: boolean }) {
   return (
     <div style={{
-      display: "flex", alignItems: "center", gap: 14,
-      padding: "14px 0",
-      borderBottom: "1px solid rgba(255,255,255,0.06)",
-    }}>
-      {/* Method icon */}
-      <div style={{ flexShrink: 0 }}>
+      display: "flex", alignItems: "center", gap: 16,
+      padding: "16px 20px",
+      borderRadius: 12,
+      background: "rgba(255,255,255,0.03)",
+      border: "1px solid rgba(255,255,255,0.06)",
+      transition: "background 0.15s, border-color 0.15s",
+    }}
+    onMouseEnter={e => {
+      (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.06)";
+      (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.1)";
+    }}
+    onMouseLeave={e => {
+      (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.03)";
+      (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.06)";
+    }}
+    >
+      {/* Method icon with glow background */}
+      <div style={{
+        flexShrink: 0,
+        width: 40, height: 40,
+        borderRadius: 10,
+        background: "rgba(255,255,255,0.06)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
         {METHOD_ICONS[deposit.method]}
       </div>
 
       {/* Label */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: 600, fontSize: 14, color: "#f0f0ee", marginBottom: 2 }}>
+        <div style={{ fontWeight: 600, fontSize: 14, color: "#f0f0ee", marginBottom: 3 }}>
           {deposit.label}
         </div>
-        <div style={{ fontSize: 12, color: "rgba(240,240,238,0.38)", fontVariantNumeric: "tabular-nums" }}>
+        <div style={{ fontSize: 12, color: "rgba(240,240,238,0.35)", fontVariantNumeric: "tabular-nums" }}>
           {deposit.sublabel}
         </div>
       </div>
 
       {/* Date */}
-      <div style={{ fontSize: 12, color: "rgba(240,240,238,0.35)", flexShrink: 0, textAlign: "right" }}>
+      <div style={{ fontSize: 12, color: "rgba(240,240,238,0.3)", flexShrink: 0, textAlign: "right" }}>
         {deposit.date}
       </div>
 
+      {/* Status badge */}
+      <div style={{
+        flexShrink: 0,
+        display: "flex", alignItems: "center", gap: 5,
+        background: "rgba(74,222,128,0.08)",
+        border: "1px solid rgba(74,222,128,0.18)",
+        borderRadius: 20,
+        padding: "3px 10px",
+      }}>
+        <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#4ade80", flexShrink: 0 }} />
+        <span style={{ fontSize: 11, fontWeight: 600, color: "#4ade80", letterSpacing: "0.02em" }}>
+          {isRu ? "Зачислено" : "Completed"}
+        </span>
+      </div>
+
       {/* Amount */}
-      <div style={{ flexShrink: 0, textAlign: "right", minWidth: 72 }}>
+      <div style={{ flexShrink: 0, textAlign: "right", minWidth: 80 }}>
         <div style={{
-          fontSize: 14, fontWeight: 700, color: "#4ade80",
+          fontSize: 15, fontWeight: 700, color: "#f0f0ee",
           fontVariantNumeric: "tabular-nums",
         }}>
           +${deposit.amount.toFixed(2)}
         </div>
-        <div style={{
-          fontSize: 11, color: "rgba(74,222,128,0.55)",
-          marginTop: 2,
-        }}>
-          {isRu ? "Зачислено" : "Completed"}
+        <div style={{ fontSize: 11, color: "rgba(240,240,238,0.3)", marginTop: 2 }}>
+          USD
         </div>
       </div>
     </div>
@@ -300,58 +330,76 @@ export default function Settings() {
         {/* BILLING */}
         {section === "billing" && (
           <div>
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 32, flexWrap: "wrap", gap: 16 }}>
-              <div>
-                <h2 style={{ fontSize: 18, fontWeight: 700, color: "#f0f0ee", margin: "0 0 6px" }}>
-                  {isRu ? "Тариф и оплата" : "Plan & Billing"}
-                </h2>
-                <p style={{ fontSize: 14, color: "rgba(240,240,238,0.45)", margin: 0 }}>
-                  {isRu ? "История пополнений вашего баланса." : "Your deposit history."}
-                </p>
-              </div>
-
-              {/* Total balance card */}
-              <div style={{
-                background: "rgba(255,255,255,0.05)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: 14, padding: "14px 20px",
-                minWidth: 160,
-              }}>
-                <div style={{ fontSize: 12, color: "rgba(240,240,238,0.4)", marginBottom: 6 }}>
-                  {isRu ? "Всего пополнено" : "Total deposited"}
-                </div>
-                <div style={{ fontSize: 24, fontWeight: 700, color: "#4ade80" }}>
-                  ${totalDeposited.toFixed(2)}
-                </div>
-              </div>
+            {/* Header */}
+            <div style={{ marginBottom: 28 }}>
+              <h2 style={{ fontSize: 22, fontWeight: 700, color: "#f0f0ee", margin: "0 0 6px", letterSpacing: "-0.02em" }}>
+                {isRu ? "Тариф и оплата" : "Plan & Billing"}
+              </h2>
+              <p style={{ fontSize: 14, color: "rgba(240,240,238,0.4)", margin: 0 }}>
+                {isRu ? "История пополнений вашего баланса." : "Your deposit history."}
+              </p>
             </div>
 
-            {/* Deposit list */}
+            {/* Stats row */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 28 }}>
+              {[
+                {
+                  label: isRu ? "Всего пополнено" : "Total deposited",
+                  value: `$${totalDeposited.toFixed(2)}`,
+                  sub: `${DEPOSITS.length} ${isRu ? "транзакций" : "transactions"}`,
+                  accent: "#f0f0ee",
+                },
+                {
+                  label: isRu ? "Последнее пополнение" : "Last deposit",
+                  value: `$${DEPOSITS[0].amount.toFixed(2)}`,
+                  sub: DEPOSITS[0].date,
+                  accent: "#f0f0ee",
+                },
+                {
+                  label: isRu ? "Средний депозит" : "Average deposit",
+                  value: `$${(totalDeposited / DEPOSITS.length).toFixed(2)}`,
+                  sub: isRu ? "на транзакцию" : "per transaction",
+                  accent: "#f0f0ee",
+                },
+              ].map((stat, i) => (
+                <div key={i} style={{
+                  background: "#1a1a1a",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  borderRadius: 14, padding: "18px 20px",
+                }}>
+                  <div style={{ fontSize: 12, color: "rgba(240,240,238,0.38)", marginBottom: 10, fontWeight: 500 }}>
+                    {stat.label}
+                  </div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: stat.accent, letterSpacing: "-0.02em", marginBottom: 4, fontVariantNumeric: "tabular-nums" }}>
+                    {stat.value}
+                  </div>
+                  <div style={{ fontSize: 12, color: "rgba(240,240,238,0.28)" }}>
+                    {stat.sub}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Section label */}
             <div style={{
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(255,255,255,0.07)",
-              borderRadius: 16, padding: "0 20px",
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              marginBottom: 12,
             }}>
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: "1fr auto auto auto",
-                gap: "0 16px",
-                padding: "10px 0",
-                borderBottom: "1px solid rgba(255,255,255,0.07)",
+              <span style={{ fontSize: 13, fontWeight: 600, color: "rgba(240,240,238,0.4)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                {isRu ? "История" : "History"}
+              </span>
+              <span style={{
+                fontSize: 12, color: "rgba(240,240,238,0.3)",
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.07)",
+                borderRadius: 20, padding: "3px 10px",
               }}>
-                {[
-                  isRu ? "Метод" : "Method",
-                  isRu ? "Дата" : "Date",
-                  isRu ? "Сумма" : "Amount",
-                ].map((h, i) => (
-                  <div key={i} style={{
-                    fontSize: 11, fontWeight: 600,
-                    color: "rgba(240,240,238,0.3)",
-                    textTransform: "uppercase", letterSpacing: "0.06em",
-                    gridColumn: i === 0 ? "1" : i === 1 ? "3" : "4",
-                  }}>{h}</div>
-                ))}
-              </div>
+                {DEPOSITS.length} {isRu ? "записей" : "entries"}
+              </span>
+            </div>
+
+            {/* Deposit list — individual cards */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {DEPOSITS.map(d => <DepositRow key={d.id} deposit={d} isRu={isRu} />)}
             </div>
           </div>
