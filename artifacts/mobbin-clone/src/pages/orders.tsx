@@ -320,7 +320,7 @@ function FilterPanel({ onClose, filters, setFilters, isDark, isRu }: {
             const active = local.filterGame === g;
             const col = g !== "all" ? GAME_COLORS[g] : null;
             return (
-              <button key={g} onClick={() => setLocal(p => ({ ...p, filterGame: g, rankFrom: "", rankTo: "" }))}
+              <button key={g} onClick={() => setLocal(p => ({ ...p, filterGame: g, rankFrom: [], rankTo: [] }))}
                 style={{
                   flex: 1, height: 28, borderRadius: 7, border: "none", cursor: "pointer",
                   display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
@@ -599,7 +599,7 @@ export default function Boosts() {
   const filterBtnRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { if (!user) navigate("/login"); }, [user]);
-  useEffect(() => SearchContext.subscribe(v => setSearch(v)), []);
+  useEffect(() => SearchContext.subscribe((v: string) => setSearch(v)), []);
 
   const hasActiveFilters = filters.budgetRange[0] > 0 || filters.budgetRange[1] < MAX_BUDGET || filters.rankFrom.length > 0 || filters.rankTo.length > 0 || filters.filterGame !== "all";
 
