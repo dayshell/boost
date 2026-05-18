@@ -72,7 +72,7 @@ export default function FlowsSection() {
               <p className="text-body-bold" style={{ marginBottom: 4 }}>Instagram · Onboarding</p>
               <p className="text-compact text-secondary">5 screens · iOS</p>
             </div>
-            <a href="#" className="btn-outline" style={{ height: 36, fontSize: 13 }}>View all flows</a>
+            <a href="/flows" className="btn-outline" style={{ height: 36, fontSize: 13 }}>View all flows</a>
           </div>
         </div>
       </div>
