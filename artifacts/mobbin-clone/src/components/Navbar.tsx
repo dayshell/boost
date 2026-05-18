@@ -26,7 +26,7 @@ function BoostLogo({ size = 30 }: { size?: number }) {
         >B</text>
       </svg>
       <span style={{
-        fontFamily: "Georgia, 'Times New Roman', serif",
+        fontFamily: "var(--app-font-sans)",
         fontWeight: 700,
         fontSize: Math.round(size * 0.6),
         letterSpacing: "-0.01em",
