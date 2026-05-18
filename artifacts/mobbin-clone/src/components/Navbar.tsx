@@ -5,6 +5,118 @@ import { useAuth } from "../AuthContext";
 import { translations } from "../i18n";
 import { useLocation } from "wouter";
 
+/* ── Request Game Modal ──────────────────────────── */
+function RequestGameModal({ onClose }: { onClose: () => void }) {
+  const { lang } = useLang();
+  const isRu = lang === "ru";
+  const [value, setValue] = useState("");
+  const [sent, setSent] = useState(false);
+  const overlayRef = useRef<HTMLDivElement>(null);
+
+  function handleOverlayClick(e: React.MouseEvent) {
+    if (e.target === overlayRef.current) onClose();
+  }
+
+  return (
+    <div
+      ref={overlayRef}
+      onClick={handleOverlayClick}
+      style={{
+        position: "fixed", inset: 0, zIndex: 2000,
+        background: "rgba(0,0,0,0.72)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        backdropFilter: "blur(4px)",
+      }}
+    >
+      <div style={{
+        width: 360, background: "#1c1c1c", borderRadius: 20,
+        padding: "28px 28px 32px", position: "relative",
+        boxShadow: "0 24px 80px rgba(0,0,0,0.6)",
+        border: "1px solid rgba(255,255,255,0.08)",
+      }}>
+        {/* Close */}
+        <button
+          onClick={onClose}
+          style={{
+            position: "absolute", top: 14, right: 14,
+            width: 30, height: 30, borderRadius: "50%",
+            border: "none", background: "rgba(255,255,255,0.1)",
+            color: "#f0f0ee", cursor: "pointer", display: "flex",
+            alignItems: "center", justifyContent: "center",
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+
+        {/* Icon */}
+        <div style={{ textAlign: "center", marginBottom: 18 }}>
+          <span style={{ fontSize: 52 }}>🎮</span>
+        </div>
+
+        {/* Title */}
+        <h2 style={{
+          textAlign: "center", color: "#f0f0ee", fontFamily: "var(--app-font-sans)",
+          fontWeight: 700, fontSize: 20, letterSpacing: "-0.02em", margin: "0 0 20px",
+          lineHeight: 1.3,
+        }}>
+          {isRu
+            ? "Какую игру вы хотите чтобы мы добавили на сайт?"
+            : "Which game should we add to the site?"}
+        </h2>
+
+        {sent ? (
+          <div style={{ textAlign: "center", color: "rgba(240,240,238,0.6)", fontSize: 14, padding: "12px 0" }}>
+            {isRu ? "✓ Запрос отправлен, спасибо!" : "✓ Request sent, thank you!"}
+          </div>
+        ) : (
+          <>
+            <input
+              type="text"
+              placeholder={isRu ? "Название игры..." : "Game name..."}
+              value={value}
+              onChange={e => setValue(e.target.value)}
+              style={{
+                width: "100%", height: 46, padding: "0 16px",
+                borderRadius: 12, border: "1px solid rgba(255,255,255,0.12)",
+                background: "rgba(255,255,255,0.06)",
+                color: "#f0f0ee", fontFamily: "var(--app-font-sans)", fontSize: 15,
+                outline: "none", boxSizing: "border-box",
+                marginBottom: 8,
+              }}
+              onFocus={e => (e.target.style.borderColor = "rgba(255,255,255,0.35)")}
+              onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.12)")}
+              autoFocus
+            />
+            <p style={{ fontSize: 12, color: "rgba(240,240,238,0.38)", margin: "0 0 20px" }}>
+              {isRu ? "Только одна игра за раз." : "Only one per request."}
+            </p>
+            <button
+              onClick={() => { if (value.trim()) setSent(true); }}
+              style={{
+                width: "100%", height: 46, borderRadius: 9999,
+                background: "#f0f0ee", color: "#111",
+                border: "none", cursor: value.trim() ? "pointer" : "default",
+                fontFamily: "var(--app-font-sans)", fontSize: 15, fontWeight: 600,
+                opacity: value.trim() ? 1 : 0.45, transition: "opacity 0.15s",
+              }}
+            >
+              {isRu ? "Продолжить" : "Continue"}
+            </button>
+          </>
+        )}
+
+        {/* Progress dots */}
+        <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 24 }}>
+          <div style={{ width: 28, height: 4, borderRadius: 9999, background: "#f0f0ee" }} />
+          <div style={{ width: 28, height: 4, borderRadius: 9999, background: "rgba(240,240,238,0.2)" }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function BoostLogo({ size = 30 }: { size?: number }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 9, textDecoration: "none" }}>
@@ -48,6 +160,7 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
   const { lang } = useLang();
   const [, navigate] = useLocation();
   const isRu = lang === "ru";
+  const [showRequestGame, setShowRequestGame] = useState(false);
 
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -173,7 +286,8 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
 
       <MenuItem
         icon={<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>}
-        label={isRu ? "Запросить контент" : "Request content"}
+        label={isRu ? "Запросить игру" : "Request game"}
+        onClick={() => setShowRequestGame(true)}
       />
       <MenuItem
         icon={<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>}
@@ -208,11 +322,9 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
 
       {divider}
 
-      <MenuItem label={isRu ? "Тарифы" : "Pricing"} />
       <MenuItem label="Changelog" />
       <MenuItem label={isRu ? "Блог" : "Blog"} />
       <MenuItem label={isRu ? "Вакансии" : "Careers"} arrow />
-      <MenuItem label="Merch" badge="New" arrow />
       <MenuItem label={isRu ? "Поддержка" : "Support"} arrow />
 
       {divider}
@@ -229,14 +341,18 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
             onMouseEnter={e => (e.currentTarget.style.color = itemColor)}
             onMouseLeave={e => (e.currentTarget.style.color = mutedColor)}>{l}</a>
         ))}
-        <a href="#" style={{ marginLeft: "auto", color: mutedColor, display: "flex" }}
+        <a href="https://t.me/" target="_blank" rel="noopener" style={{ marginLeft: "auto", color: mutedColor, display: "flex" }}
           onMouseEnter={e => (e.currentTarget.style.color = itemColor)}
           onMouseLeave={e => (e.currentTarget.style.color = mutedColor)}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.264 5.634 5.9-5.634Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
           </svg>
         </a>
       </div>
+
+      {showRequestGame && (
+        <RequestGameModal onClose={() => setShowRequestGame(false)} />
+      )}
     </div>
   );
 }
