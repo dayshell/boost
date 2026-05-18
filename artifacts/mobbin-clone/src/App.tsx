@@ -9,6 +9,7 @@ import Register from "@/pages/register";
 import Settings from "@/pages/settings";
 import Boosts from "@/pages/orders";
 import BoostDetail from "@/pages/order-detail";
+import Changelog from "@/pages/changelog";
 import { LangProvider } from "./LangContext";
 import { ThemeProvider } from "./ThemeContext";
 import { AuthProvider } from "./AuthContext";
@@ -24,6 +25,7 @@ function Router() {
       <Route path="/boosts" component={Boosts} />
       <Route path="/boosts/:id" component={BoostDetail} />
       <Route path="/settings" component={Settings} />
+      <Route path="/changelog" component={Changelog} />
       <Route component={NotFound} />
     </Switch>
   );
