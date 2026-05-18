@@ -4,7 +4,6 @@ export const translations = {
   en: {
     nav: {
       pricing: "Pricing",
-      awards: "Awards",
       signIn: "Sign in",
       getStarted: "Get started",
     },
@@ -57,7 +56,6 @@ export const translations = {
   ru: {
     nav: {
       pricing: "Тарифы",
-      awards: "Награды",
       signIn: "Войти",
       getStarted: "Начать",
     },

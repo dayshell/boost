@@ -5,7 +5,6 @@ import { translations } from "../i18n";
 function BoostLogo({ size = 30 }: { size?: number }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
-      {/* Purple gradient square with Orbitron B */}
       <div style={{
         width: size,
         height: size,
@@ -58,10 +57,9 @@ function LangToggle() {
             borderRadius: 9999,
             border: "none",
             cursor: "pointer",
-            fontFamily: "'Orbitron', sans-serif",
-            fontWeight: 700,
-            fontSize: 11,
-            letterSpacing: "0.04em",
+            fontFamily: "var(--app-font-sans)",
+            fontWeight: 600,
+            fontSize: 12,
             transition: "all 0.18s",
             background: lang === l ? "var(--bg-primary)" : "transparent",
             color: lang === l ? "var(--text-primary)" : "var(--text-tertiary)",
@@ -80,6 +78,8 @@ export default function Navbar() {
   const tr = translations[lang].nav;
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const navLinks = [tr.pricing, tr.signIn];
+
   return (
     <>
       {/* Desktop floating pill nav */}
@@ -96,18 +96,18 @@ export default function Navbar() {
           height: 60,
           padding: "8px 20px",
           borderRadius: 9999,
-          background: "rgba(255,255,255,0.88)",
+          background: "var(--bg-glass-nav)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          boxShadow: "0 0 0 1px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.06)",
-          width: "min(660px, calc(100vw - 40px))",
+          boxShadow: "0 0 0 1px var(--border-primary), 0 2px 8px rgba(0,0,0,0.06)",
+          width: "min(620px, calc(100vw - 40px))",
         }}
       >
         <a href="/" style={{ flex: 1, textDecoration: "none" }}>
           <BoostLogo size={30} />
         </a>
 
-        {[tr.pricing, tr.awards, tr.signIn].map((label) => (
+        {navLinks.map((label) => (
           <a
             key={label}
             href="#"
@@ -130,7 +130,7 @@ export default function Navbar() {
         style={{
           position: "absolute", top: 0, left: 0, right: 0, zIndex: 50,
           background: "rgba(255,255,255,0.95)", backdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(0,0,0,0.06)",
+          borderBottom: "1px solid var(--border-primary)",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px", height: 56 }}>
@@ -141,7 +141,7 @@ export default function Navbar() {
             <LangToggle />
             <a href="#" className="btn-inverse" style={{ height: 36, fontSize: 13 }}>{tr.getStarted}</a>
             <button onClick={() => setMobileOpen(!mobileOpen)} style={{ border: "none", background: "none", cursor: "pointer", padding: 4 }}>
-              <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#131415" strokeWidth="2">
+              <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="var(--text-primary)" strokeWidth="2">
                 {mobileOpen
                   ? <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   : <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
@@ -152,7 +152,7 @@ export default function Navbar() {
         </div>
         {mobileOpen && (
           <div style={{ padding: "8px 16px 16px", display: "flex", flexDirection: "column", gap: 4 }}>
-            {[tr.pricing, tr.awards, tr.signIn].map(l => (
+            {navLinks.map(l => (
               <a key={l} href="#" className="text-body-bold" style={{ padding: "8px 0", textDecoration: "none", color: "var(--text-primary)" }}>{l}</a>
             ))}
           </div>

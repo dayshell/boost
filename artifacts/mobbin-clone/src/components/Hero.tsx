@@ -2,30 +2,30 @@ import { useState, useEffect } from "react";
 import { useLang } from "../LangContext";
 import { translations } from "../i18n";
 
-// Real game cover images from reliable CDNs
-// CS2 (App ID 730) and Dota 2 (App ID 570) from Steam
-// Valorant from IGDB
 const gameLogos = [
   {
-    src: "https://cdn.cloudflare.steamstatic.com/steam/apps/730/library_600x900.jpg",
+    src: "/games/cs2.jpg",
     alt: "CS2",
     label: "CS2",
     accent: "#f0c040",
     fallbackBg: "#1b2838",
+    objectPosition: "top center",
   },
   {
-    src: "https://images.igdb.com/igdb/image/upload/t_cover_big_2x/co3osk.jpg",
+    src: "/games/valorant.png",
     alt: "Valorant",
     label: "VALORANT",
     accent: "#ff4655",
     fallbackBg: "#0f1923",
+    objectPosition: "top center",
   },
   {
-    src: "https://cdn.cloudflare.steamstatic.com/steam/apps/570/library_600x900.jpg",
+    src: "/games/dota2.jpg",
     alt: "Dota 2",
     label: "DOTA 2",
     accent: "#c23c2a",
     fallbackBg: "#0e0b0b",
+    objectPosition: "top center",
   },
 ];
 
@@ -52,6 +52,7 @@ function GameLogoStack() {
               inset: 0,
               borderRadius: 24,
               overflow: "hidden",
+              background: logo.fallbackBg,
               zIndex: isVisible ? 3 - offset : -1,
               opacity: offset === 0 ? 1 : offset === 1 ? 0.5 : offset === 2 ? 0.22 : 0,
               transform: `translateY(${offset * -8}px) scale(${1 - offset * 0.1})`,
@@ -65,20 +66,12 @@ function GameLogoStack() {
             <img
               src={logo.src}
               alt={logo.alt}
-              onError={e => {
-                const target = e.currentTarget as HTMLImageElement;
-                target.style.display = "none";
-                const parent = target.parentElement;
-                if (parent) {
-                  parent.style.background = logo.fallbackBg;
-                  parent.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;"><span style="font-family:Orbitron,sans-serif;font-weight:900;font-size:22px;color:${logo.accent};letter-spacing:0.04em;">${logo.label}</span></div>`;
-                }
-              }}
               style={{
                 width: "100%",
                 height: "100%",
                 objectFit: "cover",
-                objectPosition: "top center",
+                objectPosition: logo.objectPosition,
+                display: "block",
               }}
             />
           </div>
@@ -88,28 +81,30 @@ function GameLogoStack() {
   );
 }
 
-function GameBadge({ label, color, bg }: { label: string; color: string; bg: string }) {
+function GameBadge({ game }: { game: typeof gameLogos[0] }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
       <div style={{
         width: 22,
         height: 22,
         borderRadius: 7,
-        background: bg,
+        background: game.fallbackBg,
         overflow: "hidden",
         flexShrink: 0,
       }}>
         <img
-          src={gameLogos.find(g => g.label === label || g.alt === label)?.src}
-          alt={label}
-          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center" }}
-          onError={e => {
-            const p = e.currentTarget.parentElement;
-            if (p) p.innerHTML = `<span style="font-family:Orbitron,sans-serif;font-weight:900;font-size:8px;color:${color};display:flex;align-items:center;justify-content:center;height:100%;">${label[0]}</span>`;
+          src={game.src}
+          alt={game.label}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "top center",
+            display: "block",
           }}
         />
       </div>
-      <span className="text-body-bold" style={{ fontSize: 13, color: "var(--text-tertiary)" }}>{label}</span>
+      <span className="text-body-bold" style={{ fontSize: 13, color: "var(--text-tertiary)" }}>{game.label}</span>
     </div>
   );
 }
@@ -157,13 +152,10 @@ export default function Hero() {
           </a>
         </div>
 
-        {/* Trusted by */}
         <div>
           <p className="text-compact text-secondary" style={{ marginBottom: 20 }}>{tr.trustedBy}</p>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 24, flexWrap: "wrap" }}>
-            <GameBadge label="CS2" color="#f0c040" bg="#1b2838" />
-            <GameBadge label="Dota 2" color="#c23c2a" bg="#0e0b0b" />
-            <GameBadge label="VALORANT" color="#ff4655" bg="#0f1923" />
+            {gameLogos.map(g => <GameBadge key={g.alt} game={g} />)}
             <div style={{ width: 1, height: 18, background: "var(--border-secondary)", margin: "0 4px" }} />
             <span className="text-body-bold" style={{ fontSize: 13, color: "var(--text-tertiary)" }}>
               10 000+ {lang === "ru" ? "игроков" : "players"}
