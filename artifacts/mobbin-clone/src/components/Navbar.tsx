@@ -178,6 +178,8 @@ function LangToggle() {
 }
 
 /* ── Profile dropdown ─────────────────────────────── */
+const USD_TO_RUB = 90;
+
 function ProfileMenu({ onClose }: { onClose: () => void }) {
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme() as { theme: string; setTheme: (t: "light" | "dark" | "system") => void; toggleTheme: () => void };
@@ -185,6 +187,11 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
   const [, navigate] = useLocation();
   const isRu = lang === "ru";
   const [showRequestGame, setShowRequestGame] = useState(false);
+  const [balance, setBalance] = useState<number>(() => {
+    try { return parseFloat(localStorage.getItem("boost_balance") ?? "0") || 0; } catch { return 0; }
+  });
+  const [showTopUp, setShowTopUp] = useState(false);
+  const [topUpAmount, setTopUpAmount] = useState("");
 
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -293,6 +300,53 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
         <div style={{ fontSize: 12, color: mutedColor, marginBottom: 12 }}>
           {user?.email ?? ""}
         </div>
+
+        {/* Balance row */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, background: "rgba(255,255,255,0.05)", borderRadius: 10, padding: "8px 12px" }}>
+          <div>
+            <div style={{ fontSize: 10, color: mutedColor, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 2 }}>
+              {isRu ? "Баланс" : "Balance"}
+            </div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: itemColor, fontVariantNumeric: "tabular-nums" }}>
+              {isRu ? `₽${Math.round(balance * USD_TO_RUB).toLocaleString("ru-RU")}` : `$${balance.toFixed(2)}`}
+            </div>
+          </div>
+          <button
+            onClick={() => setShowTopUp(v => !v)}
+            style={{ height: 28, padding: "0 12px", borderRadius: 8, border: "none", cursor: "pointer", background: "#f0f0ee", color: "#111", fontFamily: "var(--app-font-sans)", fontWeight: 700, fontSize: 12, flexShrink: 0 }}
+          >
+            {isRu ? "Пополнить" : "Top up"}
+          </button>
+        </div>
+
+        {/* Top-up input (inline) */}
+        {showTopUp && (
+          <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+            <input
+              type="number" min="1"
+              placeholder={isRu ? "Сумма в $" : "Amount $"}
+              value={topUpAmount}
+              onChange={e => setTopUpAmount(e.target.value)}
+              autoFocus
+              style={{ flex: 1, height: 32, padding: "0 10px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.14)", background: "rgba(255,255,255,0.07)", color: itemColor, fontFamily: "var(--app-font-sans)", fontSize: 13, outline: "none" }}
+            />
+            <button
+              onClick={() => {
+                const amt = parseFloat(topUpAmount);
+                if (!amt || amt <= 0) return;
+                const nb = balance + amt;
+                setBalance(nb);
+                localStorage.setItem("boost_balance", String(nb));
+                setTopUpAmount("");
+                setShowTopUp(false);
+              }}
+              style={{ height: 32, padding: "0 12px", borderRadius: 8, border: "none", cursor: "pointer", background: "#4ade80", color: "#111", fontFamily: "var(--app-font-sans)", fontWeight: 700, fontSize: 13 }}
+            >
+              OK
+            </button>
+          </div>
+        )}
+
         <button style={{
           width: "100%", height: 34, borderRadius: 9999,
           background: "rgba(255,255,255,0.09)", border: "none",
