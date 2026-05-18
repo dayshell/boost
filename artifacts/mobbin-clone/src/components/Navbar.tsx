@@ -138,7 +138,7 @@ export default function Navbar() {
           background: "var(--bg-glass-nav)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          boxShadow: "0 0 0 1px var(--border-primary), 0 2px 12px rgba(0,0,0,0.10)",
+          boxShadow: "0 0 0 1px var(--border-primary)",
           width: "min(580px, calc(100vw - 40px))",
         }}
       >
