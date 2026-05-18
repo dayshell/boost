@@ -165,55 +165,78 @@ function GameLogoImg({ game, size = 32 }: { game: string; size?: number }) {
 function BoostCard({ boost, onClick, isDark, isRu }: { boost: Boost; onClick: () => void; isDark: boolean; isRu: boolean }) {
   const [hov, setHov] = useState(false);
   const fresh = isNew(boost.createdAt);
-  const cardBg = isDark ? "#252525" : "#e8e8e6";
-  const textPrimary = isDark ? "#f0f0ee" : "#131415";
-  const textSecondary = isDark ? "rgba(240,240,238,0.45)" : "#666660";
+  const col = GAME_COLORS[boost.game];
+  const cardBg = isDark ? "#1c1c1c" : "#e4e4e2";
   const budgetDisplay = isRu
     ? `₽${Math.round(Number(boost.budget) * USD_TO_RUB).toLocaleString("ru-RU")}`
     : `$${Number(boost.budget).toFixed(0)}`;
 
   return (
-    <div onClick={onClick} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)} style={{ cursor: "pointer" }}>
-      <div style={{ background: cardBg, borderRadius: 18, padding: 8, transition: "transform 0.15s", transform: hov ? "translateY(-4px)" : "none", position: "relative" }}>
-        <div style={{ borderRadius: 12, overflow: "hidden", aspectRatio: "16/10" }}>
-          <CardPreview boost={boost}/>
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        cursor: "pointer",
+        background: cardBg,
+        borderRadius: 20,
+        overflow: "hidden",
+        transition: "transform 0.18s",
+        transform: hov ? "translateY(-5px)" : "none",
+        position: "relative",
+      }}
+    >
+      {/* Header — inside the card */}
+      <div style={{ padding: "16px 16px 12px", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <GameLogoImg game={boost.game} size={30}/>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: isDark ? "#f0f0ee" : "#131415", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 140 }}>
+              {boost.authorName}
+            </div>
+            <div style={{ fontSize: 11, color: isDark ? "rgba(240,240,238,0.4)" : "#888", marginTop: 2 }}>
+              {boost.game}
+            </div>
+          </div>
         </div>
-        {fresh && (
-          <div style={{ position: "absolute", top: 16, left: 16, background: "#ffffff", color: "#111111", fontSize: 10, fontWeight: 700, letterSpacing: "0.04em", borderRadius: 6, padding: "3px 8px", fontFamily: "var(--app-font-sans)" }}>New</div>
-        )}
-        <div style={{ position: "absolute", top: 16, right: 16, background: "#ffffff", borderRadius: 7, padding: "3px 9px", fontFamily: "var(--app-font-sans)", fontSize: 11, fontWeight: 700, color: "#111111", letterSpacing: "0.01em", fontVariantNumeric: "tabular-nums" }}>
+        {/* Budget badge */}
+        <div style={{
+          background: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)",
+          borderRadius: 8, padding: "4px 9px",
+          fontSize: 12, fontWeight: 700, color: isDark ? "#f0f0ee" : "#131415",
+          fontFamily: "var(--app-font-sans)", fontVariantNumeric: "tabular-nums", flexShrink: 0,
+        }}>
           {budgetDisplay}
         </div>
       </div>
-      <div style={{ padding: "11px 4px 0", display: "flex", alignItems: "flex-start", gap: 10 }}>
-        <GameLogoImg game={boost.game} size={32}/>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: textPrimary, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginBottom: 2, lineHeight: 1.3 }}>
-            {boost.authorName}
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 1 }}>
-            <span style={{
-              fontSize: 11, fontWeight: 600, color: textSecondary,
-              background: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)",
-              borderRadius: 5, padding: "2px 6px", whiteSpace: "nowrap", maxWidth: 90,
-              overflow: "hidden", textOverflow: "ellipsis",
-            }}>
-              {boost.currentElo}
-            </span>
-            <svg width="14" height="10" viewBox="0 0 20 12" fill="none" style={{ flexShrink: 0, color: textSecondary }}>
-              <path d="M2 6h14M12 2l4 4-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <span style={{
-              fontSize: 11, fontWeight: 700,
-              color: GAME_COLORS[boost.game]?.accent ?? textPrimary,
-              background: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)",
-              borderRadius: 5, padding: "2px 6px", whiteSpace: "nowrap", maxWidth: 90,
-              overflow: "hidden", textOverflow: "ellipsis",
-            }}>
-              {boost.desiredElo}
-            </span>
-          </div>
-        </div>
+
+      {/* Rank progression row */}
+      <div style={{ padding: "0 16px 14px", display: "flex", alignItems: "center", gap: 6 }}>
+        <span style={{
+          fontSize: 11, fontWeight: 600,
+          color: isDark ? "rgba(240,240,238,0.55)" : "#666",
+          background: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)",
+          borderRadius: 6, padding: "3px 8px",
+          whiteSpace: "nowrap", maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis",
+        }}>{boost.currentElo}</span>
+        <svg width="16" height="10" viewBox="0 0 20 12" fill="none" style={{ flexShrink: 0, color: col?.accent ?? "#888", opacity: 0.8 }}>
+          <path d="M2 6h14M12 2l4 4-4 4" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        <span style={{
+          fontSize: 11, fontWeight: 700,
+          color: col?.accent ?? (isDark ? "#f0f0ee" : "#131415"),
+          background: col ? col.dim : (isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)"),
+          borderRadius: 6, padding: "3px 8px",
+          whiteSpace: "nowrap", maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis",
+        }}>{boost.desiredElo}</span>
+        {fresh && (
+          <span style={{ marginLeft: "auto", background: isDark ? "#f0f0ee" : "#131415", color: isDark ? "#111" : "#fff", fontSize: 9, fontWeight: 800, letterSpacing: "0.06em", borderRadius: 5, padding: "2px 7px", textTransform: "uppercase", flexShrink: 0 }}>New</span>
+        )}
+      </div>
+
+      {/* Preview image — fills bottom of card */}
+      <div style={{ margin: "0 10px 10px", borderRadius: 14, overflow: "hidden", aspectRatio: "16/11" }}>
+        <CardPreview boost={boost}/>
       </div>
     </div>
   );
@@ -894,33 +917,11 @@ export default function Boosts() {
 
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 20px 48px" }}>
 
-        {/* ── Row 1: Search + count + sort + actions ── */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, paddingTop: 18, paddingBottom: 12, borderBottom: `1px solid ${borderColor}` }}>
-
-          {/* Search input */}
-          <div style={{ flex: 1, position: "relative", minWidth: 0 }}>
-            <svg style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: textMuted }} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-            <input
-              value={search}
-              onChange={e => { setSearch(e.target.value); SearchContext.emit(e.target.value); }}
-              placeholder={isRu ? "Поиск бустов..." : "Search boosts..."}
-              style={{
-                width: "100%", boxSizing: "border-box",
-                height: 36, paddingLeft: 36, paddingRight: 12, borderRadius: 10,
-                border: `1px solid ${borderColor}`,
-                background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)",
-                color: textPrimary, fontSize: 13, fontFamily: "var(--app-font-sans)",
-                outline: "none",
-              }}
-              onFocus={e => (e.currentTarget.style.borderColor = isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)")}
-              onBlur={e => (e.currentTarget.style.borderColor = borderColor)}
-            />
-          </div>
+        {/* ── Row 1: Count + actions ── */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, paddingTop: 18, paddingBottom: 12, borderBottom: `1px solid ${borderColor}` }}>
 
           {/* Count badge */}
-          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+          <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 6 }}>
             <span style={{ fontSize: 13, fontWeight: 600, color: textPrimary, fontFamily: "var(--app-font-sans)" }}>
               {isRu ? "Бусты" : "Boosts"}
             </span>
@@ -934,35 +935,19 @@ export default function Boosts() {
             </span>
           </div>
 
-          {/* Sort button */}
-          <button style={{
-            height: 34, padding: "0 13px", borderRadius: 8, border: `1px solid ${borderColor}`,
-            background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", gap: 5,
-            fontSize: 13, fontWeight: 500, color: textMuted, fontFamily: "var(--app-font-sans)", transition: "all 0.12s",
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)"; e.currentTarget.style.color = textPrimary; }}
-          onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = textMuted; }}
-          >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="9" y2="18"/>
-            </svg>
-            {isRu ? "Сортировка" : "Sort"}
-          </button>
-
           {/* Filter button */}
           <div ref={filterBtnRef} style={{ position: "relative", flexShrink: 0 }}>
             <button onClick={() => setShowFilters(v => !v)} style={{
               height: 34, padding: "0 13px", borderRadius: 8, cursor: "pointer",
               display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 500,
-              fontFamily: "var(--app-font-sans)", transition: "all 0.12s",
-              border: hasActiveFilters ? `1px solid ${isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.2)"}` : `1px solid ${borderColor}`,
+              fontFamily: "var(--app-font-sans)", transition: "all 0.12s", border: "none",
               background: hasActiveFilters
                 ? (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)")
-                : "transparent",
+                : (isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"),
               color: hasActiveFilters ? textPrimary : textMuted,
             }}
-            onMouseEnter={e => !hasActiveFilters && (e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)")}
-            onMouseLeave={e => !hasActiveFilters && (e.currentTarget.style.background = "transparent")}
+            onMouseEnter={e => (e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)")}
+            onMouseLeave={e => (e.currentTarget.style.background = hasActiveFilters ? (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)") : (isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"))}
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
@@ -1009,10 +994,7 @@ export default function Boosts() {
                 onClick={() => setGameFilter(tab.id)}
                 style={{
                   display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
-                  height: 32, padding: "0 13px", borderRadius: 20,
-                  border: active
-                    ? `1px solid ${gameCol ? gameCol.accent : (isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.25)")}`
-                    : `1px solid ${borderColor}`,
+                  height: 32, padding: "0 13px", borderRadius: 20, border: "none",
                   cursor: "pointer", transition: "all 0.15s",
                   background: active
                     ? (gameCol ? gameCol.dim : (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)"))
