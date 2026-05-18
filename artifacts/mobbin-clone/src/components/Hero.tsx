@@ -1,119 +1,177 @@
-const phones = [
-  {
-    color: "#F0F0F0",
-    screens: [
-      "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=200&h=400&fit=crop",
-      "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=200&h=400&fit=crop",
-    ],
-  },
-];
+import { useState, useEffect } from "react";
+import { useLang } from "../LangContext";
+import { translations } from "../i18n";
 
-const appScreenshots = [
-  { id: 1, img: "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=220&h=440&fit=crop&q=80", app: "Instagram", rotate: "-6deg", top: "0px", left: "0px" },
-  { id: 2, img: "https://images.unsplash.com/photo-1611162618071-b39a2ec055fb?w=220&h=440&fit=crop&q=80", app: "Twitter", rotate: "3deg", top: "40px", left: "160px" },
-  { id: 3, img: "https://images.unsplash.com/photo-1607252650355-f7fd0460ccdb?w=220&h=440&fit=crop&q=80", app: "Spotify", rotate: "-3deg", top: "60px", left: "320px" },
-  { id: 4, img: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=220&h=440&fit=crop&q=80", app: "Airbnb", rotate: "5deg", top: "20px", left: "480px" },
-  { id: 5, img: "https://images.unsplash.com/photo-1616469829941-c7200edec809?w=220&h=440&fit=crop&q=80", app: "Notion", rotate: "-4deg", top: "80px", left: "640px" },
-];
-
-function PhoneMockup({ img, rotate, top, left }: { img: string; rotate: string; top: string; left: string }) {
+function CS2Icon() {
   return (
-    <div
-      className="absolute"
-      style={{ transform: `rotate(${rotate})`, top, left, width: "160px" }}
-    >
-      <div
-        className="rounded-[28px] overflow-hidden shadow-2xl border-[6px] border-[#1D1F27]"
-        style={{ width: "160px", height: "320px" }}
-      >
-        <img src={img} alt="" className="w-full h-full object-cover" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-4 bg-[#1D1F27] rounded-b-xl" />
-      </div>
+    <div style={{ width: "100%", height: "100%", background: "#1b2838", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4 }}>
+      <svg viewBox="0 0 48 48" width="62%" height="62%" fill="none">
+        <circle cx="24" cy="24" r="10" stroke="#f0c040" strokeWidth="2.5" />
+        <line x1="24" y1="4" x2="24" y2="14" stroke="#f0c040" strokeWidth="2.5" strokeLinecap="round" />
+        <line x1="24" y1="34" x2="24" y2="44" stroke="#f0c040" strokeWidth="2.5" strokeLinecap="round" />
+        <line x1="4" y1="24" x2="14" y2="24" stroke="#f0c040" strokeWidth="2.5" strokeLinecap="round" />
+        <line x1="34" y1="24" x2="44" y2="24" stroke="#f0c040" strokeWidth="2.5" strokeLinecap="round" />
+        <circle cx="24" cy="24" r="3.5" fill="#f0c040" />
+      </svg>
+      <span style={{ color: "#f0c040", fontSize: 11, fontWeight: 800, letterSpacing: "0.08em", lineHeight: 1 }}>CS2</span>
     </div>
   );
 }
 
-export default function Hero() {
+function Dota2Icon() {
   return (
-    <section className="relative overflow-hidden bg-white pt-16 pb-0">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 bg-orange-50 border border-orange-100 text-orange-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
-            <span className="text-base">✨</span>
-            New: AI-powered screen search is here
+    <div style={{ width: "100%", height: "100%", background: "#0e0b0b", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4 }}>
+      <svg viewBox="0 0 48 48" width="58%" height="58%" fill="none">
+        <path d="M24 8C15.16 8 8 15.16 8 24s7.16 16 16 16 16-7.16 16-16S32.84 8 24 8zm0 26a10 10 0 110-20 10 10 0 010 20z" fill="#c23c2a" />
+        <path d="M21 18l8 6-8 6V18z" fill="#e05540" />
+      </svg>
+      <span style={{ color: "#c23c2a", fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", lineHeight: 1 }}>DOTA 2</span>
+    </div>
+  );
+}
+
+function ValorantIcon() {
+  return (
+    <div style={{ width: "100%", height: "100%", background: "#0f1923", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4 }}>
+      <svg viewBox="0 0 48 48" width="62%" height="62%" fill="none">
+        <path d="M8 12L24 36L32 24L20 8H8L8 12Z" fill="#ff4655" />
+        <path d="M40 12L28 12L36 24L24 36L28 40H40V12Z" fill="#ff4655" opacity="0.5" />
+      </svg>
+      <span style={{ color: "#ff4655", fontSize: 9, fontWeight: 800, letterSpacing: "0.06em", lineHeight: 1 }}>VALORANT</span>
+    </div>
+  );
+}
+
+const gameLogos = [
+  { component: <CS2Icon />, alt: "CS2" },
+  { component: <Dota2Icon />, alt: "Dota 2" },
+  { component: <ValorantIcon />, alt: "Valorant" },
+];
+
+function GameLogoStack() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex(i => (i + 1) % gameLogos.length);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div style={{ position: "relative", width: 88, height: 88, margin: "0 auto 36px", borderRadius: 28 }}>
+      {gameLogos.map((logo, i) => {
+        const offset = (i - currentIndex + gameLogos.length) % gameLogos.length;
+        const isVisible = offset < 3;
+        return (
+          <div
+            key={logo.alt}
+            style={{
+              position: "absolute",
+              inset: 0,
+              borderRadius: 24,
+              overflow: "hidden",
+              zIndex: isVisible ? 3 - offset : -1,
+              opacity: offset === 0 ? 1 : offset === 1 ? 0.55 : offset === 2 ? 0.25 : 0,
+              transform: `translateY(${offset * -7}px) scale(${1 - offset * 0.09})`,
+              transformOrigin: "center top",
+              transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+              boxShadow: "0 4px 24px rgba(0,0,0,0.18)",
+            }}
+          >
+            {logo.component}
           </div>
+        );
+      })}
+    </div>
+  );
+}
 
-          <h1 className="text-5xl sm:text-6xl font-extrabold text-[#1D1F27] leading-[1.08] tracking-tight mb-6">
-            The world's biggest library of{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF6B2B] to-[#FF9900]">
-              mobile & web
-            </span>{" "}
-            design references
-          </h1>
+const trustedCompanies = [
+  { label: "CS2", color: "#f0c040" },
+  { label: "Dota 2", color: "#c23c2a" },
+  { label: "Valorant", color: "#ff4655" },
+  { label: "10 000+", color: "#6c3bff" },
+  { label: "Players", color: "#999993" },
+];
 
-          <p className="text-lg text-gray-500 leading-relaxed mb-8 max-w-2xl mx-auto">
-            Save hours of UI & UX research with our library of 600,000+ fully searchable
-            mobile & web app screenshots.
-          </p>
+export default function Hero() {
+  const { lang } = useLang();
+  const tr = translations[lang].hero;
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <a
-              href="#"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#1D1F27] hover:bg-[#2d2f3a] text-white text-sm font-semibold px-6 py-3.5 rounded-xl transition-colors"
-            >
-              Get started for free
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                <path fillRule="evenodd" d="M4 8a.5.5 0 01.5-.5h5.793L8.146 5.354a.5.5 0 11.708-.708l3 3a.5.5 0 010 .708l-3 3a.5.5 0 01-.708-.708L10.293 8.5H4.5A.5.5 0 014 8z" />
+  return (
+    <section
+      style={{
+        position: "relative",
+        display: "grid",
+        placeItems: "center",
+        padding: "156px 24px 80px",
+        background: "var(--bg-primary)",
+        minHeight: "100dvh",
+      }}
+    >
+      <div style={{ textAlign: "center", maxWidth: 720 }}>
+        <GameLogoStack />
+
+        <h1
+          className="text-showcase"
+          style={{ maxWidth: 700, margin: "0 auto 16px" }}
+        >
+          {tr.h1}
+        </h1>
+
+        <p
+          className="text-feature text-secondary"
+          style={{ maxWidth: 540, margin: "0 auto 32px" }}
+        >
+          {tr.subtitle}
+        </p>
+
+        <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 64 }}>
+          <a href="#" className="btn-inverse">{tr.join}</a>
+          <a href="#" className="btn-outline">
+            {tr.seePlans}
+            <span style={{
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              width: 24, height: 24, borderRadius: "50%",
+              background: "var(--bg-tertiary)", marginLeft: 2,
+            }}>
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M15.996 10L3 10" />
+                <path d="M9.734 16.318L15.632 9.999L9.734 3.679" />
               </svg>
-            </a>
-            <a
-              href="#"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-sm font-semibold text-gray-700 border border-gray-200 hover:border-gray-300 px-6 py-3.5 rounded-xl transition-colors"
-            >
-              Browse screens
-            </a>
-          </div>
-
-          <p className="mt-4 text-xs text-gray-400">No credit card required · Free plan available</p>
+            </span>
+          </a>
         </div>
-      </div>
 
-      <div className="relative mx-auto" style={{ maxWidth: "1200px", height: "420px", overflow: "hidden" }}>
-        <div
-          className="absolute inset-0"
-          style={{
-            background: "linear-gradient(to bottom, transparent 60%, white 100%)",
-            zIndex: 10,
-          }}
-        />
-        <div className="absolute inset-x-0 top-0 flex justify-center gap-6 px-8">
-          {[
-            { img: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=200&h=400&fit=crop&q=80", rotate: "-8deg", mt: "0px" },
-            { img: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=200&h=400&fit=crop&q=80", rotate: "3deg", mt: "50px" },
-            { img: "https://images.unsplash.com/photo-1607252650355-f7fd0460ccdb?w=200&h=400&fit=crop&q=80", rotate: "-4deg", mt: "20px" },
-            { img: "https://images.unsplash.com/photo-1616469829941-c7200edec809?w=200&h=400&fit=crop&q=80", rotate: "6deg", mt: "60px" },
-            { img: "https://images.unsplash.com/photo-1611162618071-b39a2ec055fb?w=200&h=400&fit=crop&q=80", rotate: "-5deg", mt: "10px" },
-            { img: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&h=400&fit=crop&q=80", rotate: "4deg", mt: "40px" },
-            { img: "https://images.unsplash.com/photo-1616469829941-c7200edec809?w=200&h=400&fit=crop&q=80", rotate: "-3deg", mt: "25px" },
-          ].map((p, i) => (
-            <div
-              key={i}
-              className="flex-shrink-0"
-              style={{
-                transform: `rotate(${p.rotate})`,
-                marginTop: p.mt,
-                width: "140px",
-              }}
-            >
-              <div
-                className="rounded-[24px] overflow-hidden shadow-2xl border-[5px] border-[#1D1F27] relative"
-                style={{ width: "140px", height: "290px" }}
-              >
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-3 bg-[#1D1F27] rounded-b-lg z-10" />
-                <img src={p.img} alt="" className="w-full h-full object-cover" />
+        {/* Trusted by */}
+        <div>
+          <p className="text-compact text-secondary" style={{ marginBottom: 20 }}>{tr.trustedBy}</p>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 28, flexWrap: "wrap" }}>
+            {/* CS2 badge */}
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <div style={{ width: 20, height: 20, borderRadius: 6, background: "#1b2838", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg viewBox="0 0 12 12" width="10" height="10"><circle cx="6" cy="6" r="2.5" stroke="#f0c040" strokeWidth="1.2"/><line x1="6" y1="1" x2="6" y2="3.5" stroke="#f0c040" strokeWidth="1.2" strokeLinecap="round"/><line x1="6" y1="8.5" x2="6" y2="11" stroke="#f0c040" strokeWidth="1.2" strokeLinecap="round"/><line x1="1" y1="6" x2="3.5" y2="6" stroke="#f0c040" strokeWidth="1.2" strokeLinecap="round"/><line x1="8.5" y1="6" x2="11" y2="6" stroke="#f0c040" strokeWidth="1.2" strokeLinecap="round"/></svg>
               </div>
+              <span className="text-body-bold" style={{ fontSize: 13, color: "var(--text-tertiary)" }}>CS2</span>
             </div>
-          ))}
+            {/* Dota 2 badge */}
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <div style={{ width: 20, height: 20, borderRadius: 6, background: "#0e0b0b", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg viewBox="0 0 12 12" width="10" height="10"><circle cx="6" cy="6" r="4" stroke="#c23c2a" strokeWidth="1.2" fill="none"/><path d="M5 4l3 2-3 2V4z" fill="#c23c2a"/></svg>
+              </div>
+              <span className="text-body-bold" style={{ fontSize: 13, color: "var(--text-tertiary)" }}>Dota 2</span>
+            </div>
+            {/* Valorant badge */}
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <div style={{ width: 20, height: 20, borderRadius: 6, background: "#0f1923", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg viewBox="0 0 12 12" width="10" height="10"><path d="M2 3l4 6 2-3-2.5-3H2z" fill="#ff4655"/><path d="M10 3L7.5 3 8 6 6 9l1 0.5 3-6.5z" fill="#ff4655" opacity="0.5"/></svg>
+              </div>
+              <span className="text-body-bold" style={{ fontSize: 13, color: "var(--text-tertiary)" }}>Valorant</span>
+            </div>
+            <div style={{ width: 1, height: 16, background: "var(--border-secondary)" }} />
+            <span className="text-body-bold" style={{ fontSize: 13, color: "var(--text-tertiary)" }}>10 000+ {lang === "ru" ? "игроков" : "players"}</span>
+          </div>
         </div>
       </div>
     </section>

@@ -1,88 +1,129 @@
+const CDN = "https://mobbin.com/_next/static/media";
+
 const testimonials = [
   {
-    quote: "Mobbin has become an essential part of my design process. I use it every single day to find UI patterns and get inspired before starting a new feature.",
-    name: "Sarah Chen",
-    title: "Product Designer at Figma",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&q=80",
+    name: "Sebastian Speier",
+    company: "Shop",
+    avatar: `${CDN}/sebastian.750424ba.jpeg`,
+    companyLogo: `${CDN}/shop.ff5e3e84.png`,
+    quote: "Mobbin is a great resource and it always comes in handy to see what the best practices or standards are for mobile patterns in our current landscape.",
   },
   {
-    quote: "The quality and breadth of the UI library is unmatched. Being able to search for a specific flow like 'empty state' and see how 50+ apps handle it is incredibly valuable.",
-    name: "Marcus Johnson",
-    title: "Lead Designer at Stripe",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&q=80",
+    name: "Meng To",
+    company: "DesignCode",
+    avatar: `${CDN}/meng.fcf87109.png`,
+    companyLogo: `${CDN}/designcode.ff2e5bc4.png`,
+    quote: "Mobbin is a game-changer for designers looking to step up their understanding of UX and UI design patterns. It's so massive, meticulously organized, has deep user flows and even a figma plugin! It's indispensable in the modern designer's toolbox.",
   },
   {
-    quote: "I've tried many design inspiration tools but Mobbin is leagues ahead. The search is incredibly powerful and the library is updated so frequently.",
-    name: "Priya Patel",
-    title: "UX Designer at Airbnb",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop&q=80",
+    name: "Marco Cornacchia",
+    company: "Figma",
+    avatar: `${CDN}/marco.9fcbcaa5.png`,
+    companyLogo: `${CDN}/figma.1633c7c9.png`,
+    quote: "Mobbin is one of my favorite resources for product design and ui inspo. I love having access to a ton of \"real world examples\" to see how different apps and companies handle specific UI patterns and flows.",
   },
   {
-    quote: "Our design team saves hours every week thanks to Mobbin. The collections feature alone is worth the price — we use it to align on design direction with stakeholders.",
-    name: "Tom Williams",
-    title: "Head of Design at Linear",
-    avatar: "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=80&h=80&fit=crop&q=80",
+    name: "Daryl Ginn",
+    company: "Endless",
+    avatar: `${CDN}/daryl.d4d57329.png`,
+    companyLogo: `${CDN}/endless.03c95ba0.png`,
+    quote: "Mobbin has quickly become our favourite inspiration resource for designing mobile apps at endless.design, their advanced filtering is unmatched in the inspiration space.",
   },
   {
-    quote: "Mobbin is the only tool I recommend to every designer I mentor. The depth of real-world UI patterns you can study here is absolutely incredible.",
-    name: "Aiko Tanaka",
-    title: "Senior Product Designer at Notion",
-    avatar: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=80&h=80&fit=crop&q=80",
+    name: "Haerin Song",
+    company: "Visa",
+    avatar: `${CDN}/haerin.683bc17a.jpeg`,
+    companyLogo: `${CDN}/visa.f9c2158f.webp`,
+    quote: "By using the Mobbin app, I save both my research time and space in my photo galleries filled with random screenshots. I love how easy it is to search for different patterns and copy and paste flows into Figma. It is a wonderful design tool you cannot live without!",
   },
   {
-    quote: "From onboarding flows to empty states, Mobbin has helped me benchmark our product against the best in class. The AI search is a game-changer.",
-    name: "David Kim",
-    title: "Design Lead at Loom",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&q=80",
+    name: "Rachel How",
+    company: null,
+    avatar: `${CDN}/rachel.2f387582.jpeg`,
+    companyLogo: null,
+    quote: "Mobbin is my go-to reference for app & web design. Apart from saving countless hours, it gives me insights on the design patterns, copywriting, and user flows of world-class products. A must-have for creative inspiration and efficiency!",
   },
 ];
 
-function StarRating() {
+function TestimonialCard({ t }: { t: typeof testimonials[0] }) {
   return (
-    <div className="flex gap-0.5 mb-4">
-      {[...Array(5)].map((_, i) => (
-        <svg key={i} width="16" height="16" viewBox="0 0 16 16" fill="#FF6B2B">
-          <path d="M8 1l1.854 3.755L14 5.382l-3 2.924.708 4.126L8 10.25l-3.708 2.182L5 8.306 2 5.382l4.146-.627L8 1z" />
-        </svg>
-      ))}
-    </div>
+    <figure
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 16,
+        borderRadius: 24,
+        padding: 24,
+        marginBottom: 16,
+        background: "var(--bg-primary)",
+        border: "1px solid var(--border-secondary)",
+        breakInside: "avoid",
+      }}
+    >
+      <figcaption style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ position: "relative", flexShrink: 0 }}>
+          <div style={{ width: 44, height: 44, borderRadius: "50%", overflow: "hidden" }}>
+            <img
+              src={t.avatar}
+              alt={`Avatar of ${t.name}`}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              loading="lazy"
+            />
+          </div>
+          {t.companyLogo && (
+            <div style={{
+              position: "absolute",
+              bottom: -2,
+              right: -2,
+              width: 18,
+              height: 18,
+              borderRadius: "50%",
+              border: "2px solid var(--bg-primary)",
+              background: "var(--bg-primary)",
+              overflow: "hidden",
+            }}>
+              <img src={t.companyLogo} alt={t.company || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
+            </div>
+          )}
+        </div>
+        <div>
+          <p className="text-body-bold">{t.name}</p>
+          {t.company && <p className="text-compact text-secondary">{t.company}</p>}
+        </div>
+      </figcaption>
+      <blockquote className="text-body">{t.quote}</blockquote>
+    </figure>
   );
 }
 
 export default function Testimonials() {
   return (
-    <section className="py-24 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <p className="text-orange-600 font-semibold text-sm uppercase tracking-wider mb-3">Loved by designers</p>
-          <h2 className="text-4xl font-extrabold text-[#1D1F27] tracking-tight mb-4">
-            Trusted by 100,000+ designers
-          </h2>
-          <p className="text-gray-500 text-lg max-w-xl mx-auto">
-            From indie makers to teams at the world's top companies.
-          </p>
-        </div>
+    <section style={{
+      padding: "80px 24px",
+      background: "var(--bg-primary)",
+      position: "relative",
+      overflow: "hidden",
+    }}>
+      {/* Fade at bottom */}
+      <div style={{
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: "35%",
+        background: "linear-gradient(to top, var(--bg-primary), transparent)",
+        zIndex: 1,
+        pointerEvents: "none",
+      }} />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {testimonials.map((t, i) => (
-            <div
-              key={i}
-              className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
-            >
-              <StarRating />
-              <p className="text-gray-700 text-sm leading-relaxed mb-6">"{t.quote}"</p>
-              <div className="flex items-center gap-3">
-                <img
-                  src={t.avatar}
-                  alt={t.name}
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-                <div>
-                  <div className="text-sm font-semibold text-gray-900">{t.name}</div>
-                  <div className="text-xs text-gray-400">{t.title}</div>
-                </div>
-              </div>
-            </div>
+      <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+        <h2 className="text-spotlight" style={{ textAlign: "center", maxWidth: 500, margin: "0 auto 48px", textWrap: "balance" }}>
+          What our users are saying.
+        </h2>
+
+        <div style={{ columns: "4 240px", columnGap: 16 }}>
+          {testimonials.map((t) => (
+            <TestimonialCard key={t.name} t={t} />
           ))}
         </div>
       </div>

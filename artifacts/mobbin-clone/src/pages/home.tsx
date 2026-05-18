@@ -1,22 +1,28 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
-import Stats from "@/components/Stats";
-import Features from "@/components/Features";
-import AppGrid from "@/components/AppGrid";
+import ProductCover from "@/components/ProductCover";
+import LibrarySection from "@/components/LibrarySection";
+import SearchSection from "@/components/SearchSection";
+import FlowsSection from "@/components/FlowsSection";
+import FeaturesSection from "@/components/FeaturesSection";
 import Testimonials from "@/components/Testimonials";
-import Pricing from "@/components/Pricing";
+import JoinSection from "@/components/JoinSection";
 import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white font-sans">
-      <Navbar />
-      <Hero />
-      <Stats />
-      <AppGrid />
-      <Features />
+    <div style={{ fontFamily: "var(--app-font-sans)", background: "var(--bg-primary)" }}>
+      <div style={{ position: "relative" }}>
+        <Navbar />
+        <Hero />
+      </div>
+      <ProductCover />
+      <LibrarySection />
+      <SearchSection />
+      <FlowsSection />
+      <FeaturesSection />
       <Testimonials />
-      <Pricing />
+      <JoinSection />
       <Footer />
     </div>
   );
