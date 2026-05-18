@@ -88,6 +88,93 @@ function GameLogo({ game, size = 28 }: { game: string; size?: number }) {
   );
 }
 
+/* ── Card preview: mini game-stats screenshot ────── */
+function CardPreview({ boost }: { boost: Boost }) {
+  const col = GAME_COLORS[boost.game];
+  // Simulate a browser screenshot background per game
+  const bgColors: Record<string, string> = {
+    "CS2":      "#0d1117",
+    "Dota 2":   "#0c0e13",
+    "Valorant": "#0f0e14",
+  };
+  const bg = bgColors[boost.game];
+
+  return (
+    <svg
+      viewBox="0 0 280 180"
+      xmlns="http://www.w3.org/2000/svg"
+      style={{ display: "block", width: "100%", height: "100%" }}
+    >
+      {/* Background */}
+      <rect width="280" height="180" fill={bg}/>
+
+      {/* Top bar (simulated browser/app bar) */}
+      <rect width="280" height="28" fill="rgba(255,255,255,0.04)"/>
+      <circle cx="14" cy="14" r="3.5" fill="rgba(255,255,255,0.15)"/>
+      <circle cx="24" cy="14" r="3.5" fill="rgba(255,255,255,0.15)"/>
+      <circle cx="34" cy="14" r="3.5" fill="rgba(255,255,255,0.15)"/>
+      {/* URL bar */}
+      <rect x="50" y="8" width="130" height="12" rx="3" fill="rgba(255,255,255,0.07)"/>
+
+      {/* Main content area */}
+      {/* Left: rank card */}
+      <rect x="14" y="40" width="74" height="74" rx="8" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5"/>
+      {/* Rank icon circle */}
+      <circle cx="51" cy="65" r="16" fill={col.dim} stroke={col.accent} strokeWidth="0.8" strokeOpacity="0.6"/>
+      {/* Game symbol in rank circle */}
+      {boost.game === "Valorant" ? (
+        <polygon points="51,52 62,76 40,76" fill={col.accent} opacity="0.9"/>
+      ) : boost.game === "CS2" ? (
+        <text x="51" y="69" textAnchor="middle" fill={col.accent} fontSize="8" fontWeight="800" fontFamily="Arial">CS2</text>
+      ) : (
+        <text x="51" y="69" textAnchor="middle" fill={col.accent} fontSize="8" fontWeight="800" fontFamily="Arial">D2</text>
+      )}
+      {/* Rank label */}
+      <text x="51" y="103" textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize="6.5" fontFamily="Arial">CURRENT</text>
+      <text x="51" y="112" textAnchor="middle" fill="rgba(255,255,255,0.7)" fontSize="7.5" fontWeight="bold" fontFamily="Arial">
+        {boost.currentElo.length > 9 ? boost.currentElo.slice(0, 9) : boost.currentElo}
+      </text>
+
+      {/* Arrow between ranks */}
+      <line x1="96" y1="77" x2="112" y2="77" stroke={col.accent} strokeWidth="1.5" strokeOpacity="0.8"/>
+      <polygon points="112,73 118,77 112,81" fill={col.accent} opacity="0.8"/>
+
+      {/* Right: target rank card */}
+      <rect x="122" y="40" width="74" height="74" rx="8" fill={col.dim} stroke={col.accent} strokeWidth="0.5" strokeOpacity="0.5"/>
+      <circle cx="159" cy="65" r="16" fill="rgba(0,0,0,0.3)" stroke={col.accent} strokeWidth="1"/>
+      {boost.game === "Valorant" ? (
+        <polygon points="159,52 170,76 148,76" fill={col.accent}/>
+      ) : boost.game === "CS2" ? (
+        <text x="159" y="69" textAnchor="middle" fill={col.accent} fontSize="8" fontWeight="800" fontFamily="Arial">CS2</text>
+      ) : (
+        <text x="159" y="69" textAnchor="middle" fill={col.accent} fontSize="8" fontWeight="800" fontFamily="Arial">D2</text>
+      )}
+      <text x="159" y="103" textAnchor="middle" fill={col.accent} fontSize="6.5" fontFamily="Arial" opacity="0.8">TARGET</text>
+      <text x="159" y="112" textAnchor="middle" fill={col.accent} fontSize="7.5" fontWeight="bold" fontFamily="Arial">
+        {boost.desiredElo.length > 9 ? boost.desiredElo.slice(0, 9) : boost.desiredElo}
+      </text>
+
+      {/* Budget pill */}
+      <rect x="206" y="40" width="60" height="28" rx="6" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5"/>
+      <text x="236" y="49" textAnchor="middle" fill="rgba(255,255,255,0.4)" fontSize="5.5" fontFamily="Arial">BUDGET</text>
+      <text x="236" y="61" textAnchor="middle" fill="#f0f0ee" fontSize="10" fontWeight="bold" fontFamily="Arial">${Number(boost.budget).toFixed(0)}</text>
+
+      {/* Time block */}
+      <rect x="206" y="76" width="60" height="22" rx="5" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.07)" strokeWidth="0.5"/>
+      <text x="236" y="85" textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="5" fontFamily="Arial">TIME (MSK)</text>
+      <text x="236" y="94" textAnchor="middle" fill="rgba(255,255,255,0.55)" fontSize="7" fontFamily="Arial">{boost.timeFrom}–{boost.timeTo}</text>
+
+      {/* Bottom description bar */}
+      <rect x="14" y="126" width="252" height="8" rx="3" fill="rgba(255,255,255,0.06)"/>
+      <rect x="14" y="140" width="180" height="6" rx="2" fill="rgba(255,255,255,0.04)"/>
+      <rect x="14" y="152" width="120" height="6" rx="2" fill="rgba(255,255,255,0.03)"/>
+
+      {/* Accent line at bottom */}
+      <rect x="0" y="176" width="280" height="4" fill={col.accent} opacity="0.35"/>
+    </svg>
+  );
+}
+
 /* ── Boost card — Mobbin-style ───────────────────── */
 function BoostCard({ boost, onClick }: { boost: Boost; onClick: () => void }) {
   const { lang } = useLang();
@@ -102,91 +189,26 @@ function BoostCard({ boost, onClick }: { boost: Boost; onClick: () => void }) {
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
-        background: "#1a1a1a",
-        border: "1px solid rgba(255,255,255,0.07)",
-        borderRadius: 12, overflow: "hidden",
+        background: "#1c1c1c",
+        borderRadius: 16, overflow: "hidden",
         cursor: "pointer",
-        transition: "border-color 0.15s, transform 0.15s",
-        borderColor: hov ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.07)",
-        transform: hov ? "translateY(-2px)" : "none",
+        transition: "transform 0.15s, box-shadow 0.15s",
+        transform: hov ? "translateY(-3px)" : "none",
+        boxShadow: hov
+          ? "0 0 0 1px rgba(255,255,255,0.12), 0 16px 40px rgba(0,0,0,0.5)"
+          : "0 0 0 1px rgba(255,255,255,0.06)",
       }}
     >
-      {/* ── Preview area ── */}
-      <div style={{
-        position: "relative",
-        height: 170,
-        background: `${col.gradient}, #161616`,
-        overflow: "hidden",
-      }}>
-        {/* Grid lines decoration */}
-        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.06 }} preserveAspectRatio="none">
-          <defs>
-            <pattern id={`g-${boost.id}`} width="32" height="32" patternUnits="userSpaceOnUse">
-              <path d="M 32 0 L 0 0 0 32" fill="none" stroke="white" strokeWidth="0.5"/>
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill={`url(#g-${boost.id})`}/>
-        </svg>
-
-        {/* Center content: elo range */}
-        <div style={{
-          position: "absolute", inset: 0, display: "flex", flexDirection: "column",
-          alignItems: "center", justifyContent: "center", gap: 6,
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {/* From */}
-            <div style={{
-              background: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)",
-              border: "1px solid rgba(255,255,255,0.09)",
-              borderRadius: 8, padding: "8px 14px", textAlign: "center",
-            }}>
-              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 3 }}>
-                {isRu ? "сейчас" : "from"}
-              </div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "rgba(255,255,255,0.6)", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
-                {boost.currentElo}
-              </div>
-            </div>
-
-            {/* Arrow */}
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={col.accent} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12"/>
-              <polyline points="13 6 19 12 13 18"/>
-            </svg>
-
-            {/* To */}
-            <div style={{
-              background: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)",
-              border: `1px solid ${col.dim}`,
-              borderRadius: 8, padding: "8px 14px", textAlign: "center",
-            }}>
-              <div style={{ fontSize: 10, color: col.accent, opacity: 0.7, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 3 }}>
-                {isRu ? "цель" : "to"}
-              </div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: col.accent, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
-                {boost.desiredElo}
-              </div>
-            </div>
-          </div>
-
-          {/* Budget pill */}
-          <div style={{
-            background: "rgba(0,0,0,0.5)", backdropFilter: "blur(6px)",
-            border: "1px solid rgba(255,255,255,0.1)",
-            borderRadius: 20, padding: "4px 12px",
-            fontSize: 12, fontWeight: 700, color: "#f0f0ee",
-            fontVariantNumeric: "tabular-nums",
-          }}>
-            ${Number(boost.budget).toFixed(2)}
-          </div>
-        </div>
+      {/* ── Preview area — looks like a screenshot ── */}
+      <div style={{ position: "relative", aspectRatio: "16/10", overflow: "hidden" }}>
+        <CardPreview boost={boost} />
 
         {/* "New" badge — top left */}
         {fresh && (
           <div style={{
             position: "absolute", top: 10, left: 10,
             background: "#f0f0ee", color: "#111",
-            fontSize: 10, fontWeight: 700, letterSpacing: "0.04em",
+            fontSize: 10, fontWeight: 700, letterSpacing: "0.03em",
             borderRadius: 6, padding: "3px 7px",
             fontFamily: "var(--app-font-sans)",
           }}>
@@ -197,40 +219,40 @@ function BoostCard({ boost, onClick }: { boost: Boost; onClick: () => void }) {
         {/* Bookmark icon — top right */}
         <div style={{
           position: "absolute", top: 9, right: 9,
-          width: 28, height: 28, borderRadius: 7,
-          background: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)",
+          width: 26, height: 26, borderRadius: 6,
+          background: "rgba(0,0,0,0.55)", backdropFilter: "blur(8px)",
           border: "1px solid rgba(255,255,255,0.1)",
           display: "flex", alignItems: "center", justifyContent: "center",
-          opacity: hov ? 1 : 0.6, transition: "opacity 0.15s",
+          opacity: hov ? 1 : 0,
+          transition: "opacity 0.15s",
         }}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
           </svg>
         </div>
       </div>
 
-      {/* ── Card footer ── */}
+      {/* ── Card footer — exactly like Mobbin ── */}
       <div style={{
-        padding: "10px 12px 12px",
-        display: "flex", alignItems: "flex-start", gap: 9,
+        padding: "12px 14px 14px",
+        display: "flex", alignItems: "flex-start", gap: 10,
       }}>
-        <GameLogo game={boost.game} size={30} />
+        <GameLogo game={boost.game} size={32} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
             fontSize: 13, fontWeight: 600, color: "#f0f0ee",
             whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-            marginBottom: 2, lineHeight: 1.3,
+            marginBottom: 3, lineHeight: 1.3,
           }}>
             {boost.authorName}
           </div>
           <div style={{
-            fontSize: 11, color: "rgba(240,240,238,0.38)",
-            whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-            lineHeight: 1.4,
+            fontSize: 11, color: "rgba(240,240,238,0.4)",
+            overflow: "hidden", textOverflow: "ellipsis",
+            display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+            lineHeight: 1.45,
           }}>
-            {boost.description
-              ? boost.description.slice(0, 48) + (boost.description.length > 48 ? "…" : "")
-              : `${boost.currentElo} → ${boost.desiredElo}`}
+            {boost.description || `${boost.currentElo} → ${boost.desiredElo}`}
           </div>
         </div>
       </div>
