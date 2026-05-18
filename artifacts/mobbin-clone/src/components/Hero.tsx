@@ -125,7 +125,7 @@ export default function Hero() {
       <div style={{ textAlign: "center", maxWidth: 720 }}>
         <GameLogoStack />
 
-        <h1 className="text-showcase" style={{ maxWidth: 700, margin: "0 auto 18px" }}>
+        <h1 className="text-showcase" style={{ maxWidth: 700, margin: "0 auto 18px", whiteSpace: "pre-line" }}>
           {tr.h1}
         </h1>
 
