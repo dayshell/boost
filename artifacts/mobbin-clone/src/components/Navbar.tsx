@@ -181,7 +181,7 @@ function LangToggle() {
 function ProfileMenu({ onClose }: { onClose: () => void }) {
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme() as { theme: string; setTheme: (t: "light" | "dark" | "system") => void; toggleTheme: () => void };
-  const { lang } = useLang();
+  const { lang, setLang } = useLang();
   const [, navigate] = useLocation();
   const isRu = lang === "ru";
   const [showRequestGame, setShowRequestGame] = useState(false);
@@ -340,6 +340,30 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
               }}
             >
               {icon}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Language picker */}
+      <div style={{ display: "flex", alignItems: "center", padding: "6px 14px", gap: 0 }}>
+        <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: itemColor }}>
+          {isRu ? "Язык" : "Language"}
+        </span>
+        <div style={{ display: "flex", background: "rgba(255,255,255,0.07)", borderRadius: 9999, padding: 3, gap: 2 }}>
+          {(["en", "ru"] as const).map(l => (
+            <button
+              key={l}
+              onClick={() => setLang(l)}
+              style={{
+                height: 28, padding: "0 10px", borderRadius: 9999, border: "none", cursor: "pointer",
+                fontFamily: "var(--app-font-sans)", fontWeight: 600, fontSize: 11,
+                background: lang === l ? "rgba(255,255,255,0.15)" : "transparent",
+                color: lang === l ? itemColor : mutedColor,
+                transition: "all 0.15s",
+              }}
+            >
+              {l.toUpperCase()}
             </button>
           ))}
         </div>
