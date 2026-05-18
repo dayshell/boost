@@ -748,7 +748,7 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
 
       {divider}
 
-      <MenuItem label="Changelog" />
+      <MenuItem label={isRu ? "Что нового" : "Changelog"} onClick={() => { navigate("/changelog"); onClose(); }} />
       <MenuItem label={isRu ? "Блог" : "Blog"} />
       <MenuItem
         label={isRu ? "Стать бустером" : "Become a Booster"}
