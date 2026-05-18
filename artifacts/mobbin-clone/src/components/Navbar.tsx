@@ -117,7 +117,10 @@ export default function Navbar() {
   const tr = translations[lang].nav;
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const navLinks = [tr.pricing, tr.signIn];
+  const navLinks = [
+    { label: tr.pricing, href: "#pricing" },
+    { label: tr.signIn, href: "/login" },
+  ];
 
   return (
     <>
@@ -146,10 +149,10 @@ export default function Navbar() {
           <BoostLogo size={30} />
         </a>
 
-        {navLinks.map((label) => (
+        {navLinks.map(({ label, href }) => (
           <a
             key={label}
-            href="#"
+            href={href}
             className="text-body-bold text-primary"
             style={{ textDecoration: "none", whiteSpace: "nowrap", transition: "opacity 0.15s" }}
             onMouseEnter={e => (e.currentTarget.style.opacity = "0.45")}
@@ -190,8 +193,8 @@ export default function Navbar() {
         </div>
         {mobileOpen && (
           <div style={{ padding: "8px 16px 16px", display: "flex", flexDirection: "column", gap: 4 }}>
-            {navLinks.map(l => (
-              <a key={l} href="#" className="text-body-bold" style={{ padding: "8px 0", textDecoration: "none", color: "var(--text-primary)" }}>{l}</a>
+            {navLinks.map(({ label, href }) => (
+              <a key={label} href={href} className="text-body-bold" style={{ padding: "8px 0", textDecoration: "none", color: "var(--text-primary)" }}>{label}</a>
             ))}
           </div>
         )}
