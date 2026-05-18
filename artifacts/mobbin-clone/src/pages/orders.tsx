@@ -894,90 +894,147 @@ export default function Boosts() {
 
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 20px 48px" }}>
 
-        {/* ── Top bar ── */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: `1px solid ${borderColor}`, marginBottom: 24 }}>
+        {/* ── Row 1: Search + count + sort + actions ── */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, paddingTop: 18, paddingBottom: 12, borderBottom: `1px solid ${borderColor}` }}>
 
-          {/* Left: game tabs */}
-          <div style={{ display: "flex", gap: 4, padding: "10px 0" }}>
-            {GAME_TABS.map(tab => {
-              const active = gameFilter === tab.id;
-              const gameCol = tab.id !== "all" ? GAME_COLORS[tab.id] : null;
-              return (
-                <button key={tab.id} onClick={() => setGameFilter(tab.id)} style={{
-                  display: "flex", alignItems: "center", gap: 6,
-                  height: 34, padding: "0 11px", borderRadius: 20, border: "none",
+          {/* Search input */}
+          <div style={{ flex: 1, position: "relative", minWidth: 0 }}>
+            <svg style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: textMuted }} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input
+              value={search}
+              onChange={e => { setSearch(e.target.value); SearchContext.emit(e.target.value); }}
+              placeholder={isRu ? "Поиск бустов..." : "Search boosts..."}
+              style={{
+                width: "100%", boxSizing: "border-box",
+                height: 36, paddingLeft: 36, paddingRight: 12, borderRadius: 10,
+                border: `1px solid ${borderColor}`,
+                background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)",
+                color: textPrimary, fontSize: 13, fontFamily: "var(--app-font-sans)",
+                outline: "none",
+              }}
+              onFocus={e => (e.currentTarget.style.borderColor = isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)")}
+              onBlur={e => (e.currentTarget.style.borderColor = borderColor)}
+            />
+          </div>
+
+          {/* Count badge */}
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: textPrimary, fontFamily: "var(--app-font-sans)" }}>
+              {isRu ? "Бусты" : "Boosts"}
+            </span>
+            <span style={{
+              height: 20, minWidth: 26, padding: "0 7px", borderRadius: 6,
+              background: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)",
+              color: textPrimary, fontSize: 12, fontWeight: 700, fontFamily: "var(--app-font-sans)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              {list.length}
+            </span>
+          </div>
+
+          {/* Sort button */}
+          <button style={{
+            height: 34, padding: "0 13px", borderRadius: 8, border: `1px solid ${borderColor}`,
+            background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", gap: 5,
+            fontSize: 13, fontWeight: 500, color: textMuted, fontFamily: "var(--app-font-sans)", transition: "all 0.12s",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)"; e.currentTarget.style.color = textPrimary; }}
+          onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = textMuted; }}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="9" y2="18"/>
+            </svg>
+            {isRu ? "Сортировка" : "Sort"}
+          </button>
+
+          {/* Filter button */}
+          <div ref={filterBtnRef} style={{ position: "relative", flexShrink: 0 }}>
+            <button onClick={() => setShowFilters(v => !v)} style={{
+              height: 34, padding: "0 13px", borderRadius: 8, cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 500,
+              fontFamily: "var(--app-font-sans)", transition: "all 0.12s",
+              border: hasActiveFilters ? `1px solid ${isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.2)"}` : `1px solid ${borderColor}`,
+              background: hasActiveFilters
+                ? (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)")
+                : "transparent",
+              color: hasActiveFilters ? textPrimary : textMuted,
+            }}
+            onMouseEnter={e => !hasActiveFilters && (e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)")}
+            onMouseLeave={e => !hasActiveFilters && (e.currentTarget.style.background = "transparent")}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+              </svg>
+              {isRu ? "Фильтры" : "Filters"}
+              {hasActiveFilters && <span style={{ width: 6, height: 6, borderRadius: "50%", background: isDark ? "#f0f0ee" : "#131415" }}/>}
+            </button>
+            {showFilters && (
+              <FilterPanel
+                onClose={() => setShowFilters(false)}
+                filters={filters}
+                setFilters={f => { setFilters(f); setShowFilters(false); }}
+                isDark={isDark}
+                isRu={isRu}
+              />
+            )}
+          </div>
+
+          {/* New request */}
+          <button onClick={() => setShowCreate(true)} style={{
+            height: 34, padding: "0 15px", borderRadius: 8, flexShrink: 0,
+            background: btnBg, border: "none", cursor: "pointer",
+            color: btnText, fontFamily: "var(--app-font-sans)", fontWeight: 600, fontSize: 13,
+            display: "flex", alignItems: "center", gap: 6, transition: "opacity 0.12s",
+          }}
+          onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
+          onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            {isRu ? "Новая заявка" : "New Request"}
+          </button>
+        </div>
+
+        {/* ── Row 2: Game category pills ── */}
+        <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "12px 0 16px", overflowX: "auto" }}>
+          {GAME_TABS.map(tab => {
+            const active = gameFilter === tab.id;
+            const gameCol = tab.id !== "all" ? GAME_COLORS[tab.id] : null;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setGameFilter(tab.id)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
+                  height: 32, padding: "0 13px", borderRadius: 20,
+                  border: active
+                    ? `1px solid ${gameCol ? gameCol.accent : (isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.25)")}`
+                    : `1px solid ${borderColor}`,
                   cursor: "pointer", transition: "all 0.15s",
-                  background: active ? tabActiveBg : "transparent",
-                  color: active ? (gameCol ? gameCol.accent : textPrimary) : tabInactiveColor,
+                  background: active
+                    ? (gameCol ? gameCol.dim : (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)"))
+                    : "transparent",
+                  color: active ? (gameCol ? gameCol.accent : textPrimary) : textMuted,
                   fontFamily: "var(--app-font-sans)", fontWeight: active ? 600 : 400, fontSize: 13,
                 }}
                 onMouseEnter={e => !active && (e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)")}
                 onMouseLeave={e => !active && (e.currentTarget.style.background = "transparent")}
-                >
-                  {tab.id === "all" ? (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                      <rect x="2" y="2" width="9" height="9" rx="2"/><rect x="13" y="2" width="9" height="9" rx="2" opacity="0.6"/>
-                      <rect x="2" y="13" width="9" height="9" rx="2" opacity="0.6"/><rect x="13" y="13" width="9" height="9" rx="2"/>
-                    </svg>
-                  ) : (
-                    <img src={GAME_LOGO[tab.id]} alt={tab.label} style={{ width: 16, height: 16, objectFit: "contain", borderRadius: 3, opacity: active ? 1 : 0.6 }}/>
-                  )}
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Right: filter + new request */}
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            {/* Filter button with dropdown */}
-            <div ref={filterBtnRef} style={{ position: "relative" }}>
-              <button onClick={() => setShowFilters(v => !v)} style={{
-                height: 34, padding: "0 13px", borderRadius: 8, cursor: "pointer",
-                display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600,
-                fontFamily: "var(--app-font-sans)", transition: "all 0.12s", border: "none",
-                background: hasActiveFilters
-                  ? (isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.1)")
-                  : (showFilters ? (isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.07)") : (isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)")),
-                color: hasActiveFilters ? textPrimary : textMuted,
-                outline: hasActiveFilters ? `1px solid ${isDark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.15)"}` : "none",
-              }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
-                </svg>
-                {isRu ? "Фильтры" : "Filters"}
-                {hasActiveFilters && (
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: isDark ? "#f0f0ee" : "#131415" }}/>
+              >
+                {tab.id === "all" ? (
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="2" y="2" width="9" height="9" rx="2"/><rect x="13" y="2" width="9" height="9" rx="2" opacity="0.6"/>
+                    <rect x="2" y="13" width="9" height="9" rx="2" opacity="0.6"/><rect x="13" y="13" width="9" height="9" rx="2"/>
+                  </svg>
+                ) : (
+                  <img src={GAME_LOGO[tab.id]} alt={tab.label} style={{ width: 15, height: 15, objectFit: "contain", borderRadius: 3, opacity: active ? 1 : 0.55 }}/>
                 )}
+                {tab.label}
               </button>
-
-              {showFilters && (
-                <FilterPanel
-                  onClose={() => setShowFilters(false)}
-                  filters={filters}
-                  setFilters={f => { setFilters(f); setShowFilters(false); }}
-                  isDark={isDark}
-                  isRu={isRu}
-                />
-              )}
-            </div>
-
-            {/* New request */}
-            <button onClick={() => setShowCreate(true)} style={{
-              height: 34, padding: "0 15px", borderRadius: 8,
-              background: btnBg, border: "none", cursor: "pointer",
-              color: btnText, fontFamily: "var(--app-font-sans)", fontWeight: 600, fontSize: 13,
-              display: "flex", alignItems: "center", gap: 6, transition: "opacity 0.12s",
-            }}
-            onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
-            onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-              </svg>
-              {isRu ? "Новая заявка" : "New Request"}
-            </button>
-          </div>
+            );
+          })}
         </div>
 
         {/* Active filter chips row */}
