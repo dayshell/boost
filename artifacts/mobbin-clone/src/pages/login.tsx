@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useLang } from "../LangContext";
 import { useTheme } from "../ThemeContext";
+import { useAuth } from "../AuthContext";
+import { useLocation } from "wouter";
 
 const col1 = ["/games/cs2_new.png", "/games/dota2_new.png", "/games/valorant_new.png"];
 const col2 = ["/games/valorant_new.png", "/games/cs2_new.png", "/games/dota2_new.png"];
@@ -40,6 +42,9 @@ export default function Login() {
   const [step, setStep] = useState<"email" | "password">("email");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const { login } = useAuth();
+  const [, navigate] = useLocation();
 
   const isRu = lang === "ru";
   const isDark = theme === "dark";
@@ -206,7 +211,15 @@ export default function Login() {
 
               {/* Email / Password */}
               <form
-                onSubmit={e => { e.preventDefault(); if (step === "email" && email) setStep("password"); }}
+                onSubmit={e => {
+                  e.preventDefault();
+                  if (step === "email" && email) {
+                    setStep("password");
+                  } else if (step === "password") {
+                    login(email);
+                    navigate("/dashboard");
+                  }
+                }}
                 style={{ display: "flex", flexDirection: "column", gap: 10 }}
               >
                 <input
