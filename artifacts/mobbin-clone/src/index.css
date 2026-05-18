@@ -98,6 +98,28 @@ body { min-height: 100dvh; }
   10%, 90% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+/* ── Dark theme ── */
+.dark {
+  --bg-primary: #111111;
+  --bg-secondary: #1a1a1a;
+  --bg-tertiary: #2a2a2a;
+  --bg-inverse: #f0f0ee;
+  --bg-inverse-hover: #d4d4d0;
+  --bg-primary-hover: rgba(255,255,255,0.06);
+  --bg-glass-nav: rgba(18,18,18,0.88);
+
+  --text-primary: #f0f0ee;
+  --text-secondary: #999993;
+  --text-tertiary: #666660;
+  --text-inverse: #111111;
+
+  --border-primary: rgba(255,255,255,0.10);
+  --border-secondary: rgba(255,255,255,0.08);
+  --border-tertiary: rgba(255,255,255,0.14);
+
+  color-scheme: dark;
+}
+
 /* Dark mode for footer */
 .dark-section {
   background: #0f1011;
