@@ -11,7 +11,7 @@ export const translations = {
       h1: "Boost your rank. Dominate the game.",
       subtitle: "Professional boosting for CS2, Dota 2, and Valorant — fast, safe, and guaranteed results.",
       join: "Join",
-      seePlans: "See our plans",
+      seePlans: "Read reviews",
       trustedBy: "Trusted by thousands of players worldwide",
     },
     library: {
@@ -63,7 +63,7 @@ export const translations = {
       h1: "Прокачай свой ранг.\nДоминируй в игре.",
       subtitle: "Профессиональный буст в CS2, Dota 2 и Valorant — быстро, безопасно, с гарантией результата.",
       join: "Вступить",
-      seePlans: "Тарифы",
+      seePlans: "Посмотреть отзывы",
       trustedBy: "Нам доверяют тысячи игроков по всему миру",
     },
     library: {

@@ -135,7 +135,7 @@ export default function Hero() {
 
         <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 72 }}>
           <a href="#" className="btn-inverse">{tr.join}</a>
-          <a href="#" className="btn-outline">
+          <a href="#testimonials" className="btn-outline" onClick={(e) => { e.preventDefault(); document.getElementById("testimonials")?.scrollIntoView({ behavior: "smooth" }); }}>
             {tr.seePlans}
             <span style={{
               display: "inline-flex", alignItems: "center", justifyContent: "center",

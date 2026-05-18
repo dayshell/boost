@@ -751,7 +751,7 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
       <MenuItem label="Changelog" />
       <MenuItem label={isRu ? "Блог" : "Blog"} />
       <MenuItem
-        label="Стать бустером"
+        label={isRu ? "Стать бустером" : "Become a Booster"}
         arrow
         onClick={() => setShowBecomeBooster(true)}
       />

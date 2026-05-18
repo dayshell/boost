@@ -98,7 +98,7 @@ function TestimonialCard({ t }: { t: typeof testimonials[0] }) {
 
 export default function Testimonials() {
   return (
-    <section style={{
+    <section id="testimonials" style={{
       padding: "80px 24px",
       background: "var(--bg-primary)",
       position: "relative",
