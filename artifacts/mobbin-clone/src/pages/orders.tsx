@@ -334,9 +334,9 @@ function FilterPanel({ onClose, filters, setFilters, isDark, isRu }: {
     || !!local.cs2Mode || !!local.eloFrom || !!local.eloTo;
 
   const CS2_MODES: { id: CS2Mode; label: string; logo: string }[] = [
-    { id: "faceit", label: "Faceit", logo: "/games/faceit_icon.svg" },
-    { id: "premier", label: "Premier", logo: "/games/premier_icon.svg" },
-    { id: "mm", label: isRu ? "ММ" : "MM", logo: "/games/mm_icon.svg" },
+    { id: "faceit", label: "Faceit", logo: "/games/faceit_icon.png" },
+    { id: "premier", label: "Premier", logo: "/games/premier_icon.png" },
+    { id: "mm", label: isRu ? "ММ" : "MM", logo: "/games/mm_icon.png" },
   ];
 
   return (
@@ -643,9 +643,9 @@ function CreateBoostModal({ onClose, onCreated, isDark }: { onClose: () => void;
   }
 
   const CS2_MODES_CREATE: { id: CS2Mode; label: string; logo: string }[] = [
-    { id: "faceit", label: "Faceit", logo: "/games/faceit_icon.svg" },
-    { id: "premier", label: "Premier", logo: "/games/premier_icon.svg" },
-    { id: "mm", label: isRu ? "ММ (Matchmaking)" : "MM (Matchmaking)", logo: "/games/mm_icon.svg" },
+    { id: "faceit", label: "Faceit", logo: "/games/faceit_icon.png" },
+    { id: "premier", label: "Premier", logo: "/games/premier_icon.png" },
+    { id: "mm", label: isRu ? "ММ (Matchmaking)" : "MM (Matchmaking)", logo: "/games/mm_icon.png" },
   ];
 
   return createPortal(
