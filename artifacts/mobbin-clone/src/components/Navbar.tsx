@@ -50,11 +50,6 @@ function RequestGameModal({ onClose }: { onClose: () => void }) {
           </svg>
         </button>
 
-        {/* Icon */}
-        <div style={{ textAlign: "center", marginBottom: 16 }}>
-          <span style={{ fontSize: 56, lineHeight: 1 }}>🎮</span>
-        </div>
-
         {/* Title */}
         <h2 style={{
           textAlign: "center", color: "#f0f0ee",
@@ -685,17 +680,6 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
           </div>
         )}
 
-        <button style={{
-          width: "100%", height: 34, borderRadius: 9999,
-          background: "rgba(255,255,255,0.09)", border: "none",
-          color: itemColor, fontFamily: "var(--app-font-sans)", fontSize: 13, fontWeight: 600,
-          cursor: "pointer", transition: "opacity 0.15s",
-        }}
-          onMouseEnter={e => (e.currentTarget.style.opacity = "0.72")}
-          onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
-        >
-          {isRu ? "Настроить профиль" : "Set up profile"}
-        </button>
       </div>
 
       {divider}

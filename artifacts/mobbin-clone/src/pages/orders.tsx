@@ -11,6 +11,7 @@ export interface Boost {
   authorName: string;
   authorEmail: string;
   game: "CS2" | "Dota 2" | "Valorant";
+  cs2Mode?: "faceit" | "premier" | "mm";
   currentElo: string;
   desiredElo: string;
   contact: string;
@@ -263,11 +264,16 @@ function RangeSlider({ min, max, value, onChange, isDark, accentColor }: {
 }
 
 /* ── Filter panel (dropdown) ─────────────────────── */
+type CS2Mode = "faceit" | "premier" | "mm";
+
 interface FilterState {
   budgetRange: [number, number];
   rankFrom: string[];
   rankTo: string[];
   filterGame: string;
+  cs2Mode: CS2Mode | "";
+  eloFrom: string;
+  eloTo: string;
 }
 
 function FilterPanel({ onClose, filters, setFilters, isDark, isRu }: {
@@ -293,16 +299,45 @@ function FilterPanel({ onClose, filters, setFilters, isDark, isRu }: {
   const textPrimary = isDark ? "#f0f0ee" : "#131415";
   const textMuted = isDark ? "rgba(240,240,238,0.45)" : "#666660";
   const chipBg = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)";
+  const inputBg = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)";
+  const inputBorder = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.12)";
 
   const selectedGame = local.filterGame !== "all" ? local.filterGame : "";
-  const rankList = selectedGame ? (RANKS[selectedGame] ?? []) : [];
+  const isCS2 = selectedGame === "CS2";
   const accent = selectedGame ? GAME_COLORS[selectedGame].accent : (isDark ? "#f0f0ee" : "#131415");
 
+  // show MM rank chips only for CS2+MM or non-CS2 specific games
+  const showRankChips = selectedGame && (
+    (isCS2 && local.cs2Mode === "mm") ||
+    (!isCS2 && selectedGame !== "")
+  );
+  const rankList = showRankChips ? (RANKS[selectedGame] ?? []) : [];
+
+  // show ELO/rating number inputs for Faceit/Premier
+  const showEloInputs = isCS2 && (local.cs2Mode === "faceit" || local.cs2Mode === "premier");
+
   const lbl: React.CSSProperties = { fontSize: 10, fontWeight: 700, color: textMuted, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 10, display: "block" };
+  const numInp: React.CSSProperties = {
+    width: "100%", height: 38, padding: "0 11px", borderRadius: 8,
+    border: `1px solid ${inputBorder}`, background: inputBg,
+    color: textPrimary, fontFamily: "var(--app-font-sans)", fontSize: 13,
+    outline: "none", boxSizing: "border-box", transition: "border-color 0.15s",
+  };
 
   function apply() { setFilters(local); onClose(); }
-  function reset() { setLocal({ budgetRange: [0, MAX_BUDGET], rankFrom: [], rankTo: [], filterGame: "all" }); }
-  const dirty = local.budgetRange[0] > 0 || local.budgetRange[1] < MAX_BUDGET || local.rankFrom.length > 0 || local.rankTo.length > 0 || local.filterGame !== "all";
+  function reset() {
+    setLocal({ budgetRange: [0, MAX_BUDGET], rankFrom: [], rankTo: [], filterGame: "all", cs2Mode: "", eloFrom: "", eloTo: "" });
+  }
+  const dirty = local.budgetRange[0] > 0 || local.budgetRange[1] < MAX_BUDGET
+    || local.rankFrom.length > 0 || local.rankTo.length > 0
+    || local.filterGame !== "all"
+    || !!local.cs2Mode || !!local.eloFrom || !!local.eloTo;
+
+  const CS2_MODES: { id: CS2Mode; label: string; logo: string }[] = [
+    { id: "faceit", label: "Faceit", logo: "/games/faceit_icon.svg" },
+    { id: "premier", label: "Premier", logo: "/games/premier_icon.svg" },
+    { id: "mm", label: isRu ? "ММ" : "MM", logo: "/games/mm_icon.svg" },
+  ];
 
   return (
     <div ref={panelRef} style={{
@@ -313,14 +348,17 @@ function FilterPanel({ onClose, filters, setFilters, isDark, isRu }: {
     }}>
 
       {/* Game selector */}
-      <div style={{ marginBottom: 20 }}>
+      <div style={{ marginBottom: isCS2 ? 14 : 20 }}>
         <span style={lbl as React.CSSProperties}>{isRu ? "Игра" : "Game"}</span>
         <div style={{ display: "flex", gap: 5 }}>
           {(["all", ...GAMES] as const).map(g => {
             const active = local.filterGame === g;
             const col = g !== "all" ? GAME_COLORS[g] : null;
             return (
-              <button key={g} onClick={() => setLocal(p => ({ ...p, filterGame: g, rankFrom: [], rankTo: [] }))}
+              <button key={g} onClick={() => setLocal(p => ({
+                ...p, filterGame: g, rankFrom: [], rankTo: [],
+                cs2Mode: "", eloFrom: "", eloTo: "",
+              }))}
                 style={{
                   flex: 1, height: 28, borderRadius: 7, border: "none", cursor: "pointer",
                   display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
@@ -346,6 +384,105 @@ function FilterPanel({ onClose, filters, setFilters, isDark, isRu }: {
         </div>
       </div>
 
+      {/* CS2 mode selector */}
+      {isCS2 && (
+        <div style={{ marginBottom: 20 }}>
+          <span style={lbl as React.CSSProperties}>{isRu ? "Режим" : "Mode"}</span>
+          <div style={{ display: "flex", gap: 5 }}>
+            {CS2_MODES.map(({ id, label, logo }) => {
+              const active = local.cs2Mode === id;
+              const col = GAME_COLORS["CS2"];
+              return (
+                <button key={id}
+                  onClick={() => setLocal(p => ({
+                    ...p,
+                    cs2Mode: p.cs2Mode === id ? "" : id,
+                    rankFrom: [], rankTo: [],
+                    eloFrom: "", eloTo: "",
+                  }))}
+                  style={{
+                    flex: 1, height: 34, borderRadius: 8, border: "none", cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+                    background: active ? col.dim : chipBg,
+                    color: active ? col.accent : textMuted,
+                    fontFamily: "var(--app-font-sans)", fontWeight: active ? 700 : 500, fontSize: 12,
+                    transition: "all 0.12s",
+                    outline: active ? `1.5px solid ${col.accent}` : "none",
+                  }}>
+                  <img src={logo} alt={label} style={{ width: 16, height: 16, objectFit: "contain", borderRadius: 3, flexShrink: 0 }}/>
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ELO / Premier rating inputs (Faceit or Premier mode) */}
+      {showEloInputs && (
+        <div style={{ marginBottom: 20 }}>
+          {local.cs2Mode === "faceit" ? (
+            <>
+              <span style={lbl as React.CSSProperties}>{isRu ? "ELO Faceit" : "Faceit ELO"}</span>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: 6, alignItems: "center" }}>
+                <input
+                  type="number" min="0" max="5000"
+                  value={local.eloFrom}
+                  onChange={e => setLocal(p => ({ ...p, eloFrom: e.target.value }))}
+                  placeholder={isRu ? "от 100" : "from 100"}
+                  style={numInp}
+                  onFocus={e => (e.target.style.borderColor = GAME_COLORS["CS2"].accent)}
+                  onBlur={e => (e.target.style.borderColor = inputBorder)}
+                />
+                <span style={{ color: textMuted, fontSize: 13, textAlign: "center", padding: "0 2px" }}>→</span>
+                <input
+                  type="number" min="0" max="5000"
+                  value={local.eloTo}
+                  onChange={e => setLocal(p => ({ ...p, eloTo: e.target.value }))}
+                  placeholder={isRu ? "до 5000" : "to 5000"}
+                  style={numInp}
+                  onFocus={e => (e.target.style.borderColor = GAME_COLORS["CS2"].accent)}
+                  onBlur={e => (e.target.style.borderColor = inputBorder)}
+                />
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 5 }}>
+                <span style={{ fontSize: 10, color: textMuted }}>100 ELO</span>
+                <span style={{ fontSize: 10, color: textMuted }}>5000 ELO</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <span style={lbl as React.CSSProperties}>{isRu ? "Рейтинг Premier" : "Premier Rating"}</span>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: 6, alignItems: "center" }}>
+                <input
+                  type="number" min="0" max="50000"
+                  value={local.eloFrom}
+                  onChange={e => setLocal(p => ({ ...p, eloFrom: e.target.value }))}
+                  placeholder={isRu ? "от 1000" : "from 1000"}
+                  style={numInp}
+                  onFocus={e => (e.target.style.borderColor = GAME_COLORS["CS2"].accent)}
+                  onBlur={e => (e.target.style.borderColor = inputBorder)}
+                />
+                <span style={{ color: textMuted, fontSize: 13, textAlign: "center", padding: "0 2px" }}>→</span>
+                <input
+                  type="number" min="0" max="50000"
+                  value={local.eloTo}
+                  onChange={e => setLocal(p => ({ ...p, eloTo: e.target.value }))}
+                  placeholder={isRu ? "до 30000" : "to 30000"}
+                  style={numInp}
+                  onFocus={e => (e.target.style.borderColor = GAME_COLORS["CS2"].accent)}
+                  onBlur={e => (e.target.style.borderColor = inputBorder)}
+                />
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 5 }}>
+                <span style={{ fontSize: 10, color: textMuted }}>0</span>
+                <span style={{ fontSize: 10, color: textMuted }}>50 000</span>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
       {/* Budget slider */}
       <div style={{ marginBottom: 20 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
@@ -369,7 +506,7 @@ function FilterPanel({ onClose, filters, setFilters, isDark, isRu }: {
         </div>
       </div>
 
-      {/* Rank filters — only when a specific game is selected */}
+      {/* Rank chips — MM mode for CS2, or other games */}
       {rankList.length > 0 && (
         <div style={{ marginBottom: 18 }}>
           <span style={lbl as React.CSSProperties}>{isRu ? "Текущий ранг" : "Current rank"}</span>
@@ -438,6 +575,7 @@ function CreateBoostModal({ onClose, onCreated, isDark }: { onClose: () => void;
   const isRu = lang === "ru";
 
   const [game, setGame] = useState<Boost["game"]>("CS2");
+  const [cs2Mode, setCs2Mode] = useState<CS2Mode>("faceit");
   const [currentElo, setCurrentElo] = useState("");
   const [desiredElo, setDesiredElo] = useState("");
   const [contact, setContact] = useState("");
@@ -453,6 +591,9 @@ function CreateBoostModal({ onClose, onCreated, isDark }: { onClose: () => void;
   const textPrimary = isDark ? "#f0f0ee" : "#131415";
   const textMuted = isDark ? "rgba(240,240,238,0.45)" : "#666660";
   const dividerColor = isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.08)";
+  const col = GAME_COLORS["CS2"];
+
+  const isCS2 = game === "CS2";
 
   const inp: React.CSSProperties = {
     width: "100%", height: 42, padding: "0 13px", borderRadius: 9, border: `1px solid ${inputBorder}`,
@@ -460,6 +601,27 @@ function CreateBoostModal({ onClose, onCreated, isDark }: { onClose: () => void;
     outline: "none", boxSizing: "border-box", transition: "border-color 0.15s",
   };
   const lbl: React.CSSProperties = { fontSize: 11, fontWeight: 600, color: textMuted, letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 5, display: "block" };
+
+  // Dynamic labels/placeholders based on CS2 mode
+  const eloLabels = {
+    current: isCS2
+      ? cs2Mode === "faceit" ? (isRu ? "Текущее ELO Faceit" : "Current Faceit ELO")
+      : cs2Mode === "premier" ? (isRu ? "Текущий рейтинг Premier" : "Current Premier Rating")
+      : (isRu ? "Текущий ранг" : "Current rank")
+      : (isRu ? "Текущий ранг" : "Current rank"),
+    desired: isCS2
+      ? cs2Mode === "faceit" ? (isRu ? "Желаемое ELO Faceit" : "Desired Faceit ELO")
+      : cs2Mode === "premier" ? (isRu ? "Желаемый рейтинг Premier" : "Desired Premier Rating")
+      : (isRu ? "Желаемый ранг" : "Target rank")
+      : (isRu ? "Желаемый ранг" : "Target rank"),
+    currentPh: isCS2
+      ? cs2Mode === "faceit" ? "1000" : cs2Mode === "premier" ? "5000" : RANKS["CS2"][0]
+      : game === "Dota 2" ? RANKS["Dota 2"][0] : RANKS["Valorant"][0],
+    desiredPh: isCS2
+      ? cs2Mode === "faceit" ? "2500" : cs2Mode === "premier" ? "15000" : RANKS["CS2"][4]
+      : game === "Dota 2" ? RANKS["Dota 2"][5] : RANKS["Valorant"][3],
+    inputType: (isCS2 && (cs2Mode === "faceit" || cs2Mode === "premier")) ? "number" : "text",
+  };
 
   function submit() {
     const err: Record<string, boolean> = {};
@@ -470,13 +632,21 @@ function CreateBoostModal({ onClose, onCreated, isDark }: { onClose: () => void;
     if (Object.keys(err).length) { setErrors(err); return; }
     const boost: Boost = {
       id: Date.now().toString(), authorName: user?.name ?? "User", authorEmail: user?.email ?? "",
-      game, currentElo: currentElo.trim(), desiredElo: desiredElo.trim(),
+      game,
+      cs2Mode: isCS2 ? cs2Mode : undefined,
+      currentElo: currentElo.trim(), desiredElo: desiredElo.trim(),
       contact: contact.trim(), description: description.trim(),
       timeFrom, timeTo, budget: budget.trim(), createdAt: new Date().toISOString(),
     };
     const all = loadBoosts(); all.unshift(boost); saveBoosts(all);
     onCreated(boost); onClose();
   }
+
+  const CS2_MODES_CREATE: { id: CS2Mode; label: string; logo: string }[] = [
+    { id: "faceit", label: "Faceit", logo: "/games/faceit_icon.svg" },
+    { id: "premier", label: "Premier", logo: "/games/premier_icon.svg" },
+    { id: "mm", label: isRu ? "ММ (Matchmaking)" : "MM (Matchmaking)", logo: "/games/mm_icon.svg" },
+  ];
 
   return createPortal(
     <div onClick={e => e.target === e.currentTarget && onClose()} style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(10px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
@@ -491,36 +661,81 @@ function CreateBoostModal({ onClose, onCreated, isDark }: { onClose: () => void;
           </button>
         </div>
         <div style={{ padding: "18px 22px 20px", overflowY: "auto", display: "flex", flexDirection: "column", gap: 14 }}>
+
+          {/* Game selector */}
           <div>
             <label style={lbl}>{isRu ? "Игра" : "Game"}</label>
             <div style={{ display: "flex", gap: 7 }}>
               {GAMES.map(g => {
                 const active = game === g;
-                const col = GAME_COLORS[g];
+                const gcol = GAME_COLORS[g];
                 return (
-                  <button key={g} onClick={() => setGame(g)} style={{ flex: 1, height: 38, borderRadius: 9, border: "none", cursor: "pointer", background: active ? col.dim : (isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)"), color: active ? col.accent : textMuted, fontFamily: "var(--app-font-sans)", fontWeight: active ? 700 : 400, fontSize: 13, transition: "all 0.12s" }}>
+                  <button key={g} onClick={() => { setGame(g); setCurrentElo(""); setDesiredElo(""); }}
+                    style={{ flex: 1, height: 38, borderRadius: 9, border: "none", cursor: "pointer", background: active ? gcol.dim : (isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)"), color: active ? gcol.accent : textMuted, fontFamily: "var(--app-font-sans)", fontWeight: active ? 700 : 400, fontSize: 13, transition: "all 0.12s" }}>
                     {g}
                   </button>
                 );
               })}
             </div>
           </div>
+
+          {/* CS2 mode selector */}
+          {isCS2 && (
+            <div>
+              <label style={lbl}>{isRu ? "Режим CS2" : "CS2 Mode"}</label>
+              <div style={{ display: "flex", gap: 6 }}>
+                {CS2_MODES_CREATE.map(({ id, label, logo }) => {
+                  const active = cs2Mode === id;
+                  return (
+                    <button key={id} onClick={() => { setCs2Mode(id); setCurrentElo(""); setDesiredElo(""); }}
+                      style={{
+                        flex: 1, height: 38, borderRadius: 9, border: "none", cursor: "pointer",
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+                        background: active ? col.dim : (isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)"),
+                        color: active ? col.accent : textMuted,
+                        fontFamily: "var(--app-font-sans)", fontWeight: active ? 700 : 400, fontSize: 12,
+                        outline: active ? `1.5px solid ${col.accent}55` : "none",
+                        transition: "all 0.12s",
+                      }}>
+                      <img src={logo} alt={label} style={{ width: 18, height: 18, objectFit: "contain", borderRadius: 4, flexShrink: 0 }}/>
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Current / Desired fields */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             <div>
-              <label style={{ ...lbl, color: errors.currentElo ? "#e05050" : textMuted }}>{isRu ? "Текущий ранг" : "Current rank"}</label>
-              <input value={currentElo} onChange={e => { setCurrentElo(e.target.value); setErrors(p => ({ ...p, currentElo: false })); }} placeholder={RANKS[game][0]}
+              <label style={{ ...lbl, color: errors.currentElo ? "#e05050" : textMuted }}>{eloLabels.current}</label>
+              <input
+                value={currentElo}
+                type={eloLabels.inputType}
+                min={eloLabels.inputType === "number" ? 0 : undefined}
+                onChange={e => { setCurrentElo(e.target.value); setErrors(p => ({ ...p, currentElo: false })); }}
+                placeholder={eloLabels.currentPh}
                 style={{ ...inp, borderColor: errors.currentElo ? "#e05050" : inputBorder }}
                 onFocus={e => (e.target.style.borderColor = isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)")}
-                onBlur={e => (e.target.style.borderColor = errors.currentElo ? "#e05050" : inputBorder)}/>
+                onBlur={e => (e.target.style.borderColor = errors.currentElo ? "#e05050" : inputBorder)}
+              />
             </div>
             <div>
-              <label style={{ ...lbl, color: errors.desiredElo ? "#e05050" : textMuted }}>{isRu ? "Желаемый ранг" : "Target rank"}</label>
-              <input value={desiredElo} onChange={e => { setDesiredElo(e.target.value); setErrors(p => ({ ...p, desiredElo: false })); }} placeholder={RANKS[game][3]}
+              <label style={{ ...lbl, color: errors.desiredElo ? "#e05050" : textMuted }}>{eloLabels.desired}</label>
+              <input
+                value={desiredElo}
+                type={eloLabels.inputType}
+                min={eloLabels.inputType === "number" ? 0 : undefined}
+                onChange={e => { setDesiredElo(e.target.value); setErrors(p => ({ ...p, desiredElo: false })); }}
+                placeholder={eloLabels.desiredPh}
                 style={{ ...inp, borderColor: errors.desiredElo ? "#e05050" : inputBorder }}
                 onFocus={e => (e.target.style.borderColor = isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)")}
-                onBlur={e => (e.target.style.borderColor = errors.desiredElo ? "#e05050" : inputBorder)}/>
+                onBlur={e => (e.target.style.borderColor = errors.desiredElo ? "#e05050" : inputBorder)}
+              />
             </div>
           </div>
+
           <div>
             <label style={{ ...lbl, color: errors.contact ? "#e05050" : textMuted }}>{isRu ? "Контакт" : "Contact"}</label>
             <input value={contact} onChange={e => { setContact(e.target.value); setErrors(p => ({ ...p, contact: false })); }} placeholder="Telegram, Discord, VK…"
@@ -580,7 +795,7 @@ const GAME_TABS: { id: GameFilter; label: string }[] = [
 ];
 
 /* ── Page ─────────────────────────────────────────── */
-const DEFAULT_FILTERS: FilterState = { budgetRange: [0, MAX_BUDGET], rankFrom: [], rankTo: [], filterGame: "all" };
+const DEFAULT_FILTERS: FilterState = { budgetRange: [0, MAX_BUDGET], rankFrom: [], rankTo: [], filterGame: "all", cs2Mode: "", eloFrom: "", eloTo: "" };
 
 export default function Boosts() {
   const { user } = useAuth();
@@ -601,7 +816,9 @@ export default function Boosts() {
   useEffect(() => { if (!user) navigate("/login"); }, [user]);
   useEffect(() => SearchContext.subscribe((v: string) => setSearch(v)), []);
 
-  const hasActiveFilters = filters.budgetRange[0] > 0 || filters.budgetRange[1] < MAX_BUDGET || filters.rankFrom.length > 0 || filters.rankTo.length > 0 || filters.filterGame !== "all";
+  const hasActiveFilters = filters.budgetRange[0] > 0 || filters.budgetRange[1] < MAX_BUDGET
+    || filters.rankFrom.length > 0 || filters.rankTo.length > 0
+    || filters.filterGame !== "all" || !!filters.cs2Mode || !!filters.eloFrom || !!filters.eloTo;
 
   let list = [...boosts];
   if (gameFilter !== "all") list = list.filter(b => b.game === gameFilter);
@@ -622,6 +839,21 @@ export default function Boosts() {
       return n >= filters.budgetRange[0] && (filters.budgetRange[1] >= MAX_BUDGET || n <= filters.budgetRange[1]);
     });
   }
+  // CS2 mode filter
+  if (filters.filterGame === "CS2" && filters.cs2Mode) {
+    list = list.filter(b => !b.cs2Mode || b.cs2Mode === filters.cs2Mode);
+    // ELO/rating range filters for Faceit & Premier
+    if ((filters.cs2Mode === "faceit" || filters.cs2Mode === "premier") && (filters.eloFrom || filters.eloTo)) {
+      const lo = filters.eloFrom ? parseFloat(filters.eloFrom) : -Infinity;
+      const hi = filters.eloTo ? parseFloat(filters.eloTo) : Infinity;
+      list = list.filter(b => {
+        const cur = parseFloat(b.currentElo);
+        if (!isNaN(cur)) return cur >= lo && cur <= hi;
+        return true;
+      });
+    }
+  }
+  // MM rank chip filters (and non-CS2 game rank filters)
   if (filters.rankFrom.length > 0) list = list.filter(b => filters.rankFrom.includes(b.currentElo));
   if (filters.rankTo.length > 0) list = list.filter(b => filters.rankTo.includes(b.desiredElo));
   list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());

@@ -29,250 +29,98 @@ const GAME_LOGO: Record<string, string> = {
 
 /* ── Rank visualization panel ────────────────────── */
 function RankVisual({ boost, col }: { boost: Boost; col: typeof GAME_COLORS[string] }) {
-  const screens = [
-    { id: 0, label: "Progress", icon: "📈" },
-    { id: 1, label: "Details", icon: "📋" },
-    { id: 2, label: "Timeline", icon: "⏱" },
-  ];
-  const [activeScreen, setActiveScreen] = useState(0);
-
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 0, height: "100%" }}>
-      {/* Main viewer */}
+    <div style={{
+      background: col.bg,
+      borderRadius: 16,
+      border: `1px solid rgba(255,255,255,0.08)`,
+      position: "relative", overflow: "hidden",
+      minHeight: 300,
+      display: "flex", alignItems: "center", justifyContent: "center",
+    }}>
+      {/* Dot grid background */}
       <div style={{
-        flex: 1, background: col.bg,
-        borderRadius: "16px 16px 0 0",
-        border: `1px solid rgba(255,255,255,0.08)`,
-        borderBottom: "none",
-        position: "relative", overflow: "hidden",
-        minHeight: 380,
-        display: "flex", alignItems: "center", justifyContent: "center",
-      }}>
-        {/* Subtle grid background */}
-        <div style={{
-          position: "absolute", inset: 0,
-          backgroundImage: `radial-gradient(circle at 1px 1px, ${col.accent}18 1px, transparent 0)`,
-          backgroundSize: "32px 32px",
-          opacity: 0.4,
-        }} />
+        position: "absolute", inset: 0,
+        backgroundImage: `radial-gradient(circle at 1px 1px, ${col.accent}18 1px, transparent 0)`,
+        backgroundSize: "32px 32px",
+        opacity: 0.4,
+      }} />
 
-        {/* Glow center */}
-        <div style={{
-          position: "absolute", top: "50%", left: "50%",
-          transform: "translate(-50%,-50%)",
-          width: 300, height: 300,
-          borderRadius: "50%",
-          background: `radial-gradient(circle, ${col.glow} 0%, transparent 70%)`,
-          pointerEvents: "none",
-        }} />
+      {/* Glow center */}
+      <div style={{
+        position: "absolute", top: "50%", left: "50%",
+        transform: "translate(-50%,-50%)",
+        width: 300, height: 300,
+        borderRadius: "50%",
+        background: `radial-gradient(circle, ${col.glow} 0%, transparent 70%)`,
+        pointerEvents: "none",
+      }} />
 
-        {activeScreen === 0 && (
-          /* Progress view */
-          <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 32, padding: "40px 20px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-              {/* Current rank */}
-              <div style={{ textAlign: "center" }}>
-                <div style={{
-                  width: 90, height: 90, borderRadius: "50%",
-                  background: "rgba(255,255,255,0.06)",
-                  border: `2px solid rgba(255,255,255,0.12)`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  marginBottom: 10, margin: "0 auto 10px",
-                }}>
-                  <img src={GAME_LOGO[boost.game]} alt={boost.game} style={{ width: 48, height: 48, objectFit: "contain", opacity: 0.6 }} />
-                </div>
-                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>Current</div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: "rgba(255,255,255,0.7)", fontFamily: "var(--app-font-sans)", maxWidth: 110, textAlign: "center" }}>
-                  {boost.currentElo}
-                </div>
-              </div>
-
-              {/* Arrow */}
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                <div style={{ width: 60, height: 2, background: `linear-gradient(to right, rgba(255,255,255,0.15), ${col.accent})`, borderRadius: 2 }} />
-                <div style={{
-                  width: 36, height: 36, borderRadius: "50%",
-                  background: `${col.accent}22`, border: `1.5px solid ${col.accent}66`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  boxShadow: `0 0 16px ${col.glow}`,
-                }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={col.accent} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-                  </svg>
-                </div>
-                <div style={{ width: 60, height: 2, background: `linear-gradient(to right, ${col.accent}, rgba(255,255,255,0.15))`, borderRadius: 2 }} />
-              </div>
-
-              {/* Target rank */}
-              <div style={{ textAlign: "center" }}>
-                <div style={{
-                  width: 90, height: 90, borderRadius: "50%",
-                  background: `${col.accent}18`,
-                  border: `2px solid ${col.accent}55`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  margin: "0 auto 10px",
-                  boxShadow: `0 0 24px ${col.glow}`,
-                }}>
-                  <img src={GAME_LOGO[boost.game]} alt={boost.game} style={{ width: 48, height: 48, objectFit: "contain" }} />
-                </div>
-                <div style={{ fontSize: 10, color: `${col.accent}99`, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>Target</div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: col.accent, fontFamily: "var(--app-font-sans)", maxWidth: 110, textAlign: "center" }}>
-                  {boost.desiredElo}
-                </div>
-              </div>
+      {/* Progress view */}
+      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 32, padding: "40px 20px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+          {/* Current rank */}
+          <div style={{ textAlign: "center" }}>
+            <div style={{
+              width: 90, height: 90, borderRadius: "50%",
+              background: "rgba(255,255,255,0.06)",
+              border: `2px solid rgba(255,255,255,0.12)`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              margin: "0 auto 10px",
+            }}>
+              <img src={GAME_LOGO[boost.game]} alt={boost.game} style={{ width: 48, height: 48, objectFit: "contain", opacity: 0.6 }} />
             </div>
-
-            {/* Progress bar */}
-            <div style={{ width: "80%", maxWidth: 300 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                <span style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", letterSpacing: "0.06em", textTransform: "uppercase" }}>Progress</span>
-                <span style={{ fontSize: 10, color: col.accent, fontWeight: 700 }}>0%</span>
-              </div>
-              <div style={{ height: 4, borderRadius: 2, background: "rgba(255,255,255,0.08)" }}>
-                <div style={{ width: "0%", height: "100%", borderRadius: 2, background: `linear-gradient(to right, ${col.accent}, ${col.glow})` }} />
-              </div>
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>Current</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "rgba(255,255,255,0.7)", fontFamily: "var(--app-font-sans)", maxWidth: 110, textAlign: "center" }}>
+              {boost.currentElo}
             </div>
           </div>
-        )}
 
-        {activeScreen === 1 && (
-          /* Details view */
-          <div style={{ position: "relative", zIndex: 1, padding: "32px 28px", width: "100%", boxSizing: "border-box" }}>
-            {[
-              { label: "Game", value: boost.game },
-              { label: "Current Rank", value: boost.currentElo },
-              { label: "Target Rank", value: boost.desiredElo },
-              { label: "Budget", value: `$${Number(boost.budget).toFixed(0)}` },
-              { label: "Available", value: `${boost.timeFrom} – ${boost.timeTo}` },
-              { label: "Contact", value: boost.contact },
-            ].map(({ label, value }) => (
-              <div key={label} style={{
-                display: "flex", justifyContent: "space-between", alignItems: "center",
-                padding: "10px 0",
-                borderBottom: "1px solid rgba(255,255,255,0.05)",
-              }}>
-                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", letterSpacing: "0.04em", textTransform: "uppercase" }}>{label}</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: "#f0f0ee", fontFamily: "var(--app-font-sans)" }}>{value}</span>
-              </div>
-            ))}
+          {/* Arrow */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+            <div style={{ width: 60, height: 2, background: `linear-gradient(to right, rgba(255,255,255,0.15), ${col.accent})`, borderRadius: 2 }} />
+            <div style={{
+              width: 36, height: 36, borderRadius: "50%",
+              background: `${col.accent}22`, border: `1.5px solid ${col.accent}66`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: `0 0 16px ${col.glow}`,
+            }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={col.accent} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+              </svg>
+            </div>
+            <div style={{ width: 60, height: 2, background: `linear-gradient(to right, ${col.accent}, rgba(255,255,255,0.15))`, borderRadius: 2 }} />
           </div>
-        )}
 
-        {activeScreen === 2 && (
-          /* Timeline view */
-          <div style={{ position: "relative", zIndex: 1, padding: "32px 28px", width: "100%", boxSizing: "border-box" }}>
-            {[
-              { status: "done", label: "Request posted", time: new Date(boost.createdAt).toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit" }) },
-              { status: "active", label: "Waiting for booster", time: "Now" },
-              { status: "pending", label: "Boost in progress", time: "—" },
-              { status: "pending", label: "Rank achieved", time: "—" },
-            ].map(({ status, label, time }, i) => (
-              <div key={i} style={{ display: "flex", gap: 14, marginBottom: 18 }}>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                  <div style={{
-                    width: 28, height: 28, borderRadius: "50%", flexShrink: 0,
-                    background: status === "done" ? col.accent : status === "active" ? `${col.accent}33` : "rgba(255,255,255,0.06)",
-                    border: status === "active" ? `2px solid ${col.accent}` : "2px solid transparent",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    boxShadow: status === "active" ? `0 0 10px ${col.glow}` : "none",
-                  }}>
-                    {status === "done" && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
-                    {status === "active" && <div style={{ width: 8, height: 8, borderRadius: "50%", background: col.accent }} />}
-                  </div>
-                  {i < 3 && <div style={{ width: 1, height: 24, background: status === "done" ? `${col.accent}44` : "rgba(255,255,255,0.07)", marginTop: 4 }} />}
-                </div>
-                <div style={{ paddingTop: 4 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: status === "pending" ? "rgba(255,255,255,0.3)" : "#f0f0ee", fontFamily: "var(--app-font-sans)", marginBottom: 2 }}>
-                    {label}
-                  </div>
-                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>{time}</div>
-                </div>
-              </div>
-            ))}
+          {/* Target rank */}
+          <div style={{ textAlign: "center" }}>
+            <div style={{
+              width: 90, height: 90, borderRadius: "50%",
+              background: `${col.accent}18`,
+              border: `2px solid ${col.accent}55`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              margin: "0 auto 10px",
+              boxShadow: `0 0 24px ${col.glow}`,
+            }}>
+              <img src={GAME_LOGO[boost.game]} alt={boost.game} style={{ width: 48, height: 48, objectFit: "contain" }} />
+            </div>
+            <div style={{ fontSize: 10, color: `${col.accent}99`, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>Target</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: col.accent, fontFamily: "var(--app-font-sans)", maxWidth: 110, textAlign: "center" }}>
+              {boost.desiredElo}
+            </div>
           </div>
-        )}
-
-        {/* Nav arrows */}
-        {activeScreen > 0 && (
-          <button onClick={() => setActiveScreen(s => s - 1)} style={{
-            position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
-            width: 36, height: 36, borderRadius: "50%",
-            background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)",
-            color: "#f0f0ee", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-            transition: "background 0.15s",
-          }}
-            onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.14)")}
-            onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="15 18 9 12 15 6"/>
-            </svg>
-          </button>
-        )}
-        {activeScreen < screens.length - 1 && (
-          <button onClick={() => setActiveScreen(s => s + 1)} style={{
-            position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)",
-            width: 36, height: 36, borderRadius: "50%",
-            background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)",
-            color: "#f0f0ee", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-            transition: "background 0.15s",
-          }}
-            onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.14)")}
-            onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="9 18 15 12 9 6"/>
-            </svg>
-          </button>
-        )}
-
-        {/* Screen label top-right */}
-        <div style={{
-          position: "absolute", top: 14, left: 14,
-          background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)",
-          borderRadius: 8, padding: "4px 10px",
-          fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.55)",
-          fontFamily: "var(--app-font-sans)", letterSpacing: "0.03em",
-          display: "flex", alignItems: "center", gap: 5,
-        }}>
-          <span>{screens[activeScreen].icon}</span>
-          <span>{screens[activeScreen].label}</span>
         </div>
 
-        {/* Screen counter */}
-        <div style={{
-          position: "absolute", top: 14, right: 14,
-          fontSize: 11, color: "rgba(255,255,255,0.3)",
-          fontFamily: "var(--app-font-sans)",
-        }}>
-          {activeScreen + 1} / {screens.length}
+        {/* Progress bar */}
+        <div style={{ width: "80%", maxWidth: 300 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+            <span style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", letterSpacing: "0.06em", textTransform: "uppercase" }}>Progress</span>
+            <span style={{ fontSize: 10, color: col.accent, fontWeight: 700 }}>0%</span>
+          </div>
+          <div style={{ height: 4, borderRadius: 2, background: "rgba(255,255,255,0.08)" }}>
+            <div style={{ width: "0%", height: "100%", borderRadius: 2, background: `linear-gradient(to right, ${col.accent}, ${col.glow})` }} />
+          </div>
         </div>
-      </div>
-
-      {/* Thumbnail strip */}
-      <div style={{
-        display: "flex", gap: 8, padding: "10px 12px",
-        background: "rgba(0,0,0,0.35)",
-        border: "1px solid rgba(255,255,255,0.08)",
-        borderTop: "none",
-        borderRadius: "0 0 16px 16px",
-      }}>
-        {screens.map((s, i) => (
-          <button key={s.id} onClick={() => setActiveScreen(i)} style={{
-            flex: 1, height: 52, borderRadius: 8, border: "none", cursor: "pointer",
-            background: i === activeScreen ? `${col.accent}18` : "rgba(255,255,255,0.05)",
-            outline: i === activeScreen ? `1.5px solid ${col.accent}55` : "none",
-            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-            gap: 3, transition: "all 0.15s",
-          }}>
-            <span style={{ fontSize: 18, lineHeight: 1 }}>{s.icon}</span>
-            <span style={{
-              fontSize: 9, fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase",
-              color: i === activeScreen ? col.accent : "rgba(255,255,255,0.35)",
-              fontFamily: "var(--app-font-sans)",
-            }}>{s.label}</span>
-          </button>
-        ))}
       </div>
     </div>
   );
@@ -340,7 +188,6 @@ export default function BoostDetail() {
         <Navbar />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "calc(100dvh - 60px)" }}>
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
             <div style={{ fontSize: 20, fontWeight: 700, color: "#f0f0ee", marginBottom: 8 }}>
               {isRu ? "Заявка не найдена" : "Request not found"}
             </div>
@@ -526,10 +373,22 @@ export default function BoostDetail() {
 
               {/* Meta rows */}
               {[
-                { icon: "🎯", label: isRu ? "Текущий" : "Current", value: boost.currentElo },
-                { icon: "🏆", label: isRu ? "Цель" : "Target", value: boost.desiredElo },
-                { icon: "⏰", label: isRu ? "Время" : "Hours", value: `${boost.timeFrom}–${boost.timeTo}` },
-                { icon: "📡", label: isRu ? "Контакт" : "Contact", value: boost.contact },
+                {
+                  icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>,
+                  label: isRu ? "Текущий" : "Current", value: boost.currentElo,
+                },
+                {
+                  icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+                  label: isRu ? "Цель" : "Target", value: boost.desiredElo,
+                },
+                {
+                  icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+                  label: isRu ? "Время" : "Hours", value: `${boost.timeFrom}–${boost.timeTo}`,
+                },
+                {
+                  icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+                  label: isRu ? "Контакт" : "Contact", value: boost.contact,
+                },
               ].map(({ icon, label, value }) => (
                 <div key={label} style={{
                   display: "flex", alignItems: "center", gap: 8,
@@ -537,7 +396,7 @@ export default function BoostDetail() {
                   borderTop: "1px solid rgba(255,255,255,0.05)",
                   fontSize: 12,
                 }}>
-                  <span style={{ fontSize: 14, lineHeight: 1, flexShrink: 0 }}>{icon}</span>
+                  <span style={{ color: "rgba(240,240,238,0.4)", flexShrink: 0, display: "flex" }}>{icon}</span>
                   <span style={{ color: "rgba(240,240,238,0.35)", fontFamily: "var(--app-font-sans)", flexShrink: 0, minWidth: 52 }}>{label}</span>
                   <span style={{
                     color: "#f0f0ee", fontFamily: "var(--app-font-sans)", fontWeight: 600,
