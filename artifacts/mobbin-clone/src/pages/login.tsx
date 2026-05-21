@@ -42,6 +42,9 @@ export default function Login() {
   const [step, setStep] = useState<"email" | "password">("email");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [requiresPassword, setRequiresPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const { login } = useAuth();
   const [, navigate] = useLocation();
@@ -73,6 +76,41 @@ export default function Login() {
     transition: "border-color 0.15s",
     boxSizing: "border-box",
   };
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      if (step === "email" && email) {
+        // Проверяем email
+        const res = await fetch("http://localhost:3000/api/auth/check-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+        const data = await res.json();
+
+        if (data.requiresPassword) {
+          setRequiresPassword(true);
+          setStep("password");
+        } else {
+          // Вход без пароля
+          await login(email);
+          navigate("/boosts");
+        }
+      } else if (step === "password") {
+        // Вход с паролем
+        await login(email, password);
+        navigate("/boosts");
+      }
+    } catch (err: any) {
+      setError(err.message || (isRu ? "Ошибка входа" : "Login error"));
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <>
@@ -211,17 +249,22 @@ export default function Login() {
 
               {/* Email / Password */}
               <form
-                onSubmit={e => {
-                  e.preventDefault();
-                  if (step === "email" && email) {
-                    setStep("password");
-                  } else if (step === "password") {
-                    login(email);
-                    navigate("/boosts");
-                  }
-                }}
+                onSubmit={handleSubmit}
                 style={{ display: "flex", flexDirection: "column", gap: 10 }}
               >
+                {error && (
+                  <div style={{
+                    padding: "10px 14px",
+                    borderRadius: 8,
+                    background: "rgba(229,83,58,0.1)",
+                    border: "1px solid rgba(229,83,58,0.3)",
+                    color: "#e5533a",
+                    fontSize: 13,
+                    marginBottom: 4,
+                  }}>
+                    {error}
+                  </div>
+                )}
                 <input
                   type="email" placeholder="Email" value={email}
                   onChange={e => setEmail(e.target.value)}
@@ -229,6 +272,7 @@ export default function Login() {
                   onFocus={e => (e.target.style.borderColor = isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.4)")}
                   onBlur={e => (e.target.style.borderColor = inputBorder)}
                   autoComplete="email"
+                  disabled={loading || step === "password"}
                 />
                 {step === "password" && (
                   <input
@@ -238,22 +282,27 @@ export default function Login() {
                     onFocus={e => (e.target.style.borderColor = isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.4)")}
                     onBlur={e => (e.target.style.borderColor = inputBorder)}
                     autoComplete="current-password" autoFocus
+                    disabled={loading}
                   />
                 )}
                 <button
                   type="submit"
+                  disabled={loading}
                   style={{
                     width: "100%", height: 44, borderRadius: 10,
                     background: isDark ? "#f0f0ee" : "#131415",
                     color: isDark ? "#111111" : "#ffffff",
-                    border: "none", cursor: "pointer",
+                    border: "none", cursor: loading ? "not-allowed" : "pointer",
                     fontFamily: "var(--app-font-sans)", fontSize: 14, fontWeight: 600,
                     transition: "opacity 0.15s",
+                    opacity: loading ? 0.5 : 1,
                   }}
-                  onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
-                  onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+                  onMouseEnter={e => { if (!loading) e.currentTarget.style.opacity = "0.85"; }}
+                  onMouseLeave={e => { if (!loading) e.currentTarget.style.opacity = "1"; }}
                 >
-                  {step === "email"
+                  {loading
+                    ? (isRu ? "Загрузка..." : "Loading...")
+                    : step === "email"
                     ? (isRu ? "Продолжить с email" : "Continue with email")
                     : (isRu ? "Войти" : "Sign in")}
                 </button>
@@ -261,9 +310,26 @@ export default function Login() {
 
               {step === "password" && (
                 <div style={{ textAlign: "center", marginTop: 14 }}>
-                  <a href="#" style={{ fontSize: 13, color: mutedColor, textDecoration: "underline", textUnderlineOffset: 3 }}>
-                    {isRu ? "Забыли пароль?" : "Forgot password?"}
-                  </a>
+                  <button
+                    onClick={() => {
+                      setStep("email");
+                      setPassword("");
+                      setRequiresPassword(false);
+                      setError("");
+                    }}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      fontSize: 13,
+                      color: mutedColor,
+                      textDecoration: "underline",
+                      textUnderlineOffset: 3,
+                      fontFamily: "var(--app-font-sans)",
+                    }}
+                  >
+                    {isRu ? "← Изменить email" : "← Change email"}
+                  </button>
                 </div>
               )}
             </div>

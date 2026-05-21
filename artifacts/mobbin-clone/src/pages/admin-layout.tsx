@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "../AuthContext";
 import { useSiteSettings } from "../SiteSettingsContext";
@@ -45,28 +45,28 @@ export function AdminLayout({ children, title }: { children: ReactNode; title: s
   const { settings } = useSiteSettings();
   const [location, navigate] = useLocation();
 
-  if (!user?.isAdmin) {
+  useEffect(() => {
+    // Редирект для не-админов
+    if (!user) {
+      navigate("/login");
+    } else if (!user.isAdmin) {
+      navigate("/boosts");
+    }
+  }, [user, navigate]);
+
+  // Показываем загрузку пока проверяем
+  if (!user || !user.isAdmin) {
     return (
       <div style={{
-        minHeight: "100vh", background: "#0d0d0d", display: "flex",
-        alignItems: "center", justifyContent: "center", fontFamily: "var(--app-font-sans)",
+        minHeight: "100vh",
+        background: "#0d0d0d",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontFamily: "var(--app-font-sans)",
       }}>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
-          <div style={{ color: "#f0f0ee", fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Доступ запрещён</div>
-          <div style={{ color: "rgba(240,240,238,0.45)", fontSize: 14, marginBottom: 24 }}>
-            Войдите как admin@boost.com
-          </div>
-          <button
-            onClick={() => navigate("/login")}
-            style={{
-              height: 40, padding: "0 20px", borderRadius: 10, border: "none",
-              background: "#f0f0ee", color: "#111", cursor: "pointer",
-              fontFamily: "var(--app-font-sans)", fontWeight: 700, fontSize: 14,
-            }}
-          >
-            Войти
-          </button>
+        <div style={{ color: "rgba(240,240,238,0.3)", fontSize: 14 }}>
+          Загрузка...
         </div>
       </div>
     );

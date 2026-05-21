@@ -9,9 +9,13 @@
   },
   "scripts": {
     "push": "drizzle-kit push --config ./drizzle.config.ts",
-    "push-force": "drizzle-kit push --force --config ./drizzle.config.ts"
+    "push-force": "drizzle-kit push --force --config ./drizzle.config.ts",
+    "setup": "node setup-database.js",
+    "studio": "drizzle-kit studio",
+    "test": "node test-connection.js"
   },
   "dependencies": {
+    "dotenv": "^17.4.2",
     "drizzle-orm": "catalog:",
     "drizzle-zod": "^0.8.3",
     "pg": "^8.20.0",

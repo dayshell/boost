@@ -46,8 +46,8 @@ export const translations = {
     },
     footer: {
       tagline: "Climb the ranked ladder with BOOST.",
-      links1: ["Explore", "Games", "Pricing", "Changelog", "Blog", "Discord"],
-      links2: ["Contact", "Help center", "Careers", "Merch", "X (Twitter)", "LinkedIn"],
+      links1: ["Explore", "Games", "Changelog", "Blog"],
+      links2: ["Contact", "Help center", "Become a Booster", "Telegram"],
       copy: "© BOOST 2024–2026. All rights reserved",
       privacy: "Privacy policy",
       terms: "Terms",
@@ -98,8 +98,8 @@ export const translations = {
     },
     footer: {
       tagline: "Поднимайся в рейтинге с BOOST.",
-      links1: ["Игры", "Каталог", "Цены", "Обновления", "Блог", "Discord"],
-      links2: ["Контакты", "Помощь", "Вакансии", "Мерч", "X (Twitter)", "LinkedIn"],
+      links1: ["Игры", "Каталог", "Обновления", "Блог"],
+      links2: ["Контакты", "Помощь", "Стать бустером", "Telegram"],
       copy: "© BOOST 2024–2026. Все права защищены",
       privacy: "Политика конфиденциальности",
       terms: "Условия",

@@ -238,7 +238,7 @@ const GAME_ACCENT: Record<string, string> = {
 };
 
 export default function Settings() {
-  const { user, logout } = useAuth();
+  const { user, logout, setPassword, updateNickname } = useAuth();
   const { lang } = useLang();
   const [, navigate] = useLocation();
   const [section, setSection] = useState<Section>("account");
@@ -248,6 +248,18 @@ export default function Settings() {
   });
   const [showTopUp, setShowTopUp] = useState(false);
   const [topUpAmount, setTopUpAmount] = useState("");
+  
+  // Password state
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordLoading, setPasswordLoading] = useState(false);
+
+  // Nickname state
+  const [editingNickname, setEditingNickname] = useState(false);
+  const [nicknameValue, setNicknameValue] = useState(user?.nickname || "");
+  const [nicknameLoading, setNicknameLoading] = useState(false);
 
   if (!user) {
     navigate("/login");
@@ -255,6 +267,45 @@ export default function Settings() {
   }
 
   const totalDeposited = DEPOSITS.reduce((s, d) => s + d.amount, 0);
+
+  async function handleSetPassword() {
+    setPasswordError("");
+    
+    if (newPassword.length < 6) {
+      setPasswordError(isRu ? "Пароль должен быть минимум 6 символов" : "Password must be at least 6 characters");
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      setPasswordError(isRu ? "Пароли не совпадают" : "Passwords don't match");
+      return;
+    }
+
+    setPasswordLoading(true);
+    try {
+      await setPassword(newPassword);
+      setShowPasswordModal(false);
+      setNewPassword("");
+      setConfirmPassword("");
+      alert(isRu ? "Пароль успешно установлен!" : "Password set successfully!");
+    } catch (err: any) {
+      setPasswordError(err.message || (isRu ? "Ошибка установки пароля" : "Error setting password"));
+    } finally {
+      setPasswordLoading(false);
+    }
+  }
+
+  async function handleSaveNickname() {
+    setNicknameLoading(true);
+    try {
+      await updateNickname(nicknameValue);
+      setEditingNickname(false);
+    } catch (err: any) {
+      alert(err.message || (isRu ? "Ошибка обновления никнейма" : "Error updating nickname"));
+    } finally {
+      setNicknameLoading(false);
+    }
+  }
 
   return (
     <div style={{
@@ -325,7 +376,16 @@ export default function Settings() {
               <h2 style={{ fontSize: 18, fontWeight: 700, color: "#f0f0ee", margin: "0 0 4px" }}>
                 {isRu ? "Личные данные" : "Personal details"}
               </h2>
-              <SettingRow label={isRu ? "Имя" : "Name"} value={user.name} action actionLabel={isRu ? "Изменить" : "Edit"} />
+              <SettingRow
+                label={isRu ? "Имя/Никнейм" : "Name/Nickname"}
+                value={user.nickname || user.name}
+                action
+                actionLabel={isRu ? "Изменить" : "Edit"}
+                onAction={() => {
+                  setNicknameValue(user.nickname || "");
+                  setEditingNickname(true);
+                }}
+              />
               <SettingRow label={isRu ? "Email адрес" : "Email address"} value={user.email} action actionLabel={isRu ? "Изменить" : "Edit"} />
 
               {/* Balance row */}
@@ -370,7 +430,13 @@ export default function Settings() {
                 </div>
               </div>
 
-              <SettingRow label={isRu ? "Пароль" : "Password"} value={isRu ? "Пароль не задан" : "No password yet"} action actionLabel={isRu ? "Создать" : "Create new"} />
+              <SettingRow
+                label={isRu ? "Пароль" : "Password"}
+                value={user.hasPassword ? (isRu ? "••••••••" : "••••••••") : (isRu ? "Пароль не задан" : "No password set")}
+                action
+                actionLabel={user.hasPassword ? (isRu ? "Изменить" : "Change") : (isRu ? "Создать" : "Create")}
+                onAction={() => setShowPasswordModal(true)}
+              />
             </section>
 
             <section>
@@ -563,6 +629,261 @@ export default function Settings() {
           </div>
         )}
       </main>
+
+      {/* Password Modal */}
+      {showPasswordModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.7)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+          }}
+          onClick={() => setShowPasswordModal(false)}
+        >
+          <div
+            style={{
+              background: "#1a1a1a",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: 16,
+              padding: "32px",
+              width: "100%",
+              maxWidth: 420,
+              boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: "#f0f0ee", margin: "0 0 8px" }}>
+              {user.hasPassword
+                ? (isRu ? "Изменить пароль" : "Change Password")
+                : (isRu ? "Создать пароль" : "Create Password")}
+            </h2>
+            <p style={{ fontSize: 14, color: "rgba(240,240,238,0.45)", margin: "0 0 24px" }}>
+              {isRu
+                ? "Установите пароль для защиты вашего аккаунта"
+                : "Set a password to secure your account"}
+            </p>
+
+            {passwordError && (
+              <div
+                style={{
+                  padding: "10px 14px",
+                  borderRadius: 8,
+                  background: "rgba(229,83,58,0.1)",
+                  border: "1px solid rgba(229,83,58,0.3)",
+                  color: "#e5533a",
+                  fontSize: 13,
+                  marginBottom: 16,
+                }}
+              >
+                {passwordError}
+              </div>
+            )}
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 24 }}>
+              <input
+                type="password"
+                placeholder={isRu ? "Новый пароль" : "New password"}
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+                style={{
+                  width: "100%",
+                  height: 44,
+                  padding: "0 14px",
+                  borderRadius: 10,
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  background: "rgba(255,255,255,0.06)",
+                  color: "#f0f0ee",
+                  fontFamily: "var(--app-font-sans)",
+                  fontSize: 15,
+                  outline: "none",
+                  boxSizing: "border-box",
+                }}
+                disabled={passwordLoading}
+              />
+              <input
+                type="password"
+                placeholder={isRu ? "Подтвердите пароль" : "Confirm password"}
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                style={{
+                  width: "100%",
+                  height: 44,
+                  padding: "0 14px",
+                  borderRadius: 10,
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  background: "rgba(255,255,255,0.06)",
+                  color: "#f0f0ee",
+                  fontFamily: "var(--app-font-sans)",
+                  fontSize: 15,
+                  outline: "none",
+                  boxSizing: "border-box",
+                }}
+                disabled={passwordLoading}
+              />
+            </div>
+
+            <div style={{ display: "flex", gap: 10 }}>
+              <button
+                onClick={() => {
+                  setShowPasswordModal(false);
+                  setNewPassword("");
+                  setConfirmPassword("");
+                  setPasswordError("");
+                }}
+                disabled={passwordLoading}
+                style={{
+                  flex: 1,
+                  height: 44,
+                  borderRadius: 10,
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  background: "rgba(255,255,255,0.06)",
+                  color: "#f0f0ee",
+                  cursor: passwordLoading ? "not-allowed" : "pointer",
+                  fontFamily: "var(--app-font-sans)",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  opacity: passwordLoading ? 0.5 : 1,
+                }}
+              >
+                {isRu ? "Отмена" : "Cancel"}
+              </button>
+              <button
+                onClick={handleSetPassword}
+                disabled={passwordLoading}
+                style={{
+                  flex: 1,
+                  height: 44,
+                  borderRadius: 10,
+                  border: "none",
+                  background: "#f0f0ee",
+                  color: "#111",
+                  cursor: passwordLoading ? "not-allowed" : "pointer",
+                  fontFamily: "var(--app-font-sans)",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  opacity: passwordLoading ? 0.5 : 1,
+                }}
+              >
+                {passwordLoading
+                  ? (isRu ? "Сохранение..." : "Saving...")
+                  : (isRu ? "Сохранить" : "Save")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Nickname Modal */}
+      {editingNickname && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.7)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+          }}
+          onClick={() => setEditingNickname(false)}
+        >
+          <div
+            style={{
+              background: "#1a1a1a",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: 16,
+              padding: "32px",
+              width: "100%",
+              maxWidth: 420,
+              boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: "#f0f0ee", margin: "0 0 8px" }}>
+              {isRu ? "Изменить никнейм" : "Change Nickname"}
+            </h2>
+            <p style={{ fontSize: 14, color: "rgba(240,240,238,0.45)", margin: "0 0 24px" }}>
+              {isRu
+                ? "Ваш никнейм будет отображаться на сайте"
+                : "Your nickname will be displayed on the site"}
+            </p>
+
+            <div style={{ marginBottom: 24 }}>
+              <input
+                type="text"
+                placeholder={isRu ? "Введите никнейм" : "Enter nickname"}
+                value={nicknameValue}
+                onChange={e => setNicknameValue(e.target.value)}
+                style={{
+                  width: "100%",
+                  height: 44,
+                  padding: "0 14px",
+                  borderRadius: 10,
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  background: "rgba(255,255,255,0.06)",
+                  color: "#f0f0ee",
+                  fontFamily: "var(--app-font-sans)",
+                  fontSize: 15,
+                  outline: "none",
+                  boxSizing: "border-box",
+                }}
+                disabled={nicknameLoading}
+                autoFocus
+              />
+            </div>
+
+            <div style={{ display: "flex", gap: 10 }}>
+              <button
+                onClick={() => {
+                  setEditingNickname(false);
+                  setNicknameValue(user.nickname || "");
+                }}
+                disabled={nicknameLoading}
+                style={{
+                  flex: 1,
+                  height: 44,
+                  borderRadius: 10,
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  background: "rgba(255,255,255,0.06)",
+                  color: "#f0f0ee",
+                  cursor: nicknameLoading ? "not-allowed" : "pointer",
+                  fontFamily: "var(--app-font-sans)",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  opacity: nicknameLoading ? 0.5 : 1,
+                }}
+              >
+                {isRu ? "Отмена" : "Cancel"}
+              </button>
+              <button
+                onClick={handleSaveNickname}
+                disabled={nicknameLoading}
+                style={{
+                  flex: 1,
+                  height: 44,
+                  borderRadius: 10,
+                  border: "none",
+                  background: "#f0f0ee",
+                  color: "#111",
+                  cursor: nicknameLoading ? "not-allowed" : "pointer",
+                  fontFamily: "var(--app-font-sans)",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  opacity: nicknameLoading ? 0.5 : 1,
+                }}
+              >
+                {nicknameLoading
+                  ? (isRu ? "Сохранение..." : "Saving...")
+                  : (isRu ? "Сохранить" : "Save")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

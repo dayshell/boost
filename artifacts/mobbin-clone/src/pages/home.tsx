@@ -16,13 +16,7 @@ export default function Home() {
         <Navbar />
         <Hero />
       </div>
-      <ProductCover />
-      <LibrarySection />
-      <SearchSection />
-      <FlowsSection />
-      <FeaturesSection />
       <Testimonials />
-      <JoinSection />
       <Footer />
     </div>
   );

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useLang } from "../LangContext";
 import { useTheme } from "../ThemeContext";
+import { useAuth } from "../AuthContext";
+import { useLocation } from "wouter";
 
 function BoostLogo() {
   return (
@@ -17,11 +19,29 @@ function BoostLogo() {
 export default function Register() {
   const { lang } = useLang();
   const { theme, toggleTheme } = useTheme();
-  const [name, setName] = useState("");
+  const { login } = useAuth();
+  const [, navigate] = useLocation();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const isRu = lang === "ru";
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      // Регистрация = просто вход с email (без пароля)
+      await login(email);
+      navigate("/boosts");
+    } catch (err: any) {
+      setError(err.message || (isRu ? "Ошибка регистрации" : "Registration error"));
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
@@ -118,21 +138,21 @@ export default function Register() {
           <div style={{ flex: 1, height: 1, background: "var(--border-secondary)" }} />
         </div>
 
-        <form onSubmit={e => e.preventDefault()} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <div>
-            <label style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>
-              {isRu ? "Имя" : "Name"}
-            </label>
-            <input
-              type="text"
-              placeholder={isRu ? "Ваше имя" : "Your name"}
-              value={name}
-              onChange={e => setName(e.target.value)}
-              style={inputStyle}
-              onFocus={e => (e.target.style.borderColor = "#666")}
-              onBlur={e => (e.target.style.borderColor = "var(--border-tertiary)")}
-            />
+        {error && (
+          <div style={{
+            padding: "10px 14px",
+            borderRadius: 8,
+            background: "rgba(229,83,58,0.1)",
+            border: "1px solid rgba(229,83,58,0.3)",
+            color: "#e5533a",
+            fontSize: 13,
+            marginBottom: 16,
+          }}>
+            {error}
           </div>
+        )}
+
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div>
             <label style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>
               Email
@@ -145,35 +165,32 @@ export default function Register() {
               style={inputStyle}
               onFocus={e => (e.target.style.borderColor = "#666")}
               onBlur={e => (e.target.style.borderColor = "var(--border-tertiary)")}
+              disabled={loading}
+              required
             />
           </div>
-          <div>
-            <label style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>
-              {isRu ? "Пароль" : "Password"}
-            </label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              style={inputStyle}
-              onFocus={e => (e.target.style.borderColor = "#666")}
-              onBlur={e => (e.target.style.borderColor = "var(--border-tertiary)")}
-            />
-          </div>
+          <p style={{ fontSize: 12, color: "var(--text-tertiary)", margin: "4px 0" }}>
+            {isRu
+              ? "Пароль не требуется. Вы сможете установить его позже в настройках."
+              : "No password required. You can set one later in settings."}
+          </p>
           <button
             type="submit"
+            disabled={loading}
             style={{
               width: "100%", height: 48, borderRadius: 12,
               background: "var(--bg-inverse)", color: "var(--text-inverse)",
-              border: "none", cursor: "pointer",
+              border: "none", cursor: loading ? "not-allowed" : "pointer",
               fontFamily: "var(--app-font-sans)", fontSize: 15, fontWeight: 600,
               marginTop: 4, transition: "opacity 0.15s",
+              opacity: loading ? 0.5 : 1,
             }}
-            onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
-            onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+            onMouseEnter={e => { if (!loading) e.currentTarget.style.opacity = "0.85"; }}
+            onMouseLeave={e => { if (!loading) e.currentTarget.style.opacity = "1"; }}
           >
-            {isRu ? "Создать аккаунт" : "Create account"}
+            {loading
+              ? (isRu ? "Создание..." : "Creating...")
+              : (isRu ? "Создать аккаунт" : "Create account")}
           </button>
         </form>
 

@@ -870,6 +870,7 @@ export const SearchContext = (window as any).__boostSearchCtx ?? (() => {
 
 function AppHeader() {
   const { lang } = useLang();
+  const [, navigate] = useLocation();
   const isRu = lang === "ru";
   const [searchFocused, setSearchFocused] = useState(false);
   const [searchVal, setSearchVal] = useState(SearchContext.value);
@@ -891,9 +892,21 @@ function AppHeader() {
     }}>
       {/* Left: logo + nav links */}
       <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 4 }}>
-        <a href="/" style={{ textDecoration: "none", marginRight: 8 }}>
+        <button
+          onClick={() => navigate("/")}
+          style={{
+            textDecoration: "none",
+            marginRight: 8,
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            padding: 0,
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
           <BoostLogo size={26} />
-        </a>
+        </button>
       </div>
 
       {/* Search bar — centered */}
@@ -966,6 +979,7 @@ export default function Navbar() {
   const { lang } = useLang();
   const { theme, toggleTheme } = useTheme();
   const { user } = useAuth();
+  const [, navigate] = useLocation();
   const isRu = lang === "ru";
   const tr = translations[lang].nav;
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -993,9 +1007,21 @@ export default function Navbar() {
           width: "min(580px, calc(100vw - 40px))",
         }}
       >
-        <a href="/" style={{ flex: 1, textDecoration: "none" }}>
+        <button
+          onClick={() => navigate("/")}
+          style={{
+            flex: 1,
+            textDecoration: "none",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            padding: 0,
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
           <BoostLogo size={30} />
-        </a>
+        </button>
 
         {navLinks.map(({ label, href }) => (
           <a key={label} href={href}
@@ -1044,7 +1070,20 @@ export default function Navbar() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px", height: 56 }}>
-          <a href="/" style={{ textDecoration: "none" }}><BoostLogo size={26} /></a>
+          <button
+            onClick={() => navigate("/")}
+            style={{
+              textDecoration: "none",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <BoostLogo size={26} />
+          </button>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <LangToggle />
             <button onClick={() => setMobileOpen(!mobileOpen)} style={{ border: "none", background: "none", cursor: "pointer", padding: 4 }}>

@@ -1,51 +1,63 @@
-const CDN = "https://mobbin.com/_next/static/media";
+import { useLang } from "@/LangContext";
 
 const testimonials = [
   {
-    name: "Sebastian Speier",
-    company: "Shop",
-    avatar: `${CDN}/sebastian.750424ba.jpeg`,
-    companyLogo: `${CDN}/shop.ff5e3e84.png`,
-    quote: "Mobbin is a great resource and it always comes in handy to see what the best practices or standards are for mobile patterns in our current landscape.",
+    name: "ShadowStrike",
+    rank: "CS2 Global Elite",
+    avatar: "https://i.pravatar.cc/150?img=12",
+    quote: {
+      ru: "Профессиональный подход к работе. Буст выполнен качественно и в срок. Бустер был вежлив, отвечал на все вопросы. Рекомендую!",
+      en: "Professional approach to work. Boost completed with quality and on time. Booster was polite and answered all questions. Highly recommend!",
+    },
   },
   {
-    name: "Meng To",
-    company: "DesignCode",
-    avatar: `${CDN}/meng.fcf87109.png`,
-    companyLogo: `${CDN}/designcode.ff2e5bc4.png`,
-    quote: "Mobbin is a game-changer for designers looking to step up their understanding of UX and UI design patterns. It's so massive, meticulously organized, has deep user flows and even a figma plugin! It's indispensable in the modern designer's toolbox.",
+    name: "PhoenixRising",
+    rank: "Valorant Immortal",
+    avatar: "https://i.pravatar.cc/150?img=33",
+    quote: {
+      ru: "Отличный сервис! Заказывал буст с Платины до Иммортала. Все прошло быстро и безопасно. Аккаунт в полном порядке, спасибо команде!",
+      en: "Excellent service! Ordered boost from Platinum to Immortal. Everything went quickly and safely. Account is in perfect condition, thanks to the team!",
+    },
   },
   {
-    name: "Marco Cornacchia",
-    company: "Figma",
-    avatar: `${CDN}/marco.9fcbcaa5.png`,
-    companyLogo: `${CDN}/figma.1633c7c9.png`,
-    quote: "Mobbin is one of my favorite resources for product design and ui inspo. I love having access to a ton of \"real world examples\" to see how different apps and companies handle specific UI patterns and flows.",
+    name: "CyberWolf",
+    rank: "Dota 2 Divine",
+    avatar: "https://i.pravatar.cc/150?img=68",
+    quote: {
+      ru: "Пользуюсь услугами уже второй раз. Всегда качественно, быстро и конфиденциально. Бустеры высокого уровня, видно что профессионалы своего дела.",
+      en: "Using the service for the second time. Always quality, fast and confidential. High-level boosters, you can see they are professionals.",
+    },
   },
   {
-    name: "Daryl Ginn",
-    company: "Endless",
-    avatar: `${CDN}/daryl.d4d57329.png`,
-    companyLogo: `${CDN}/endless.03c95ba0.png`,
-    quote: "Mobbin has quickly become our favourite inspiration resource for designing mobile apps at endless.design, their advanced filtering is unmatched in the inspiration space.",
+    name: "NightHawk",
+    rank: "League of Legends Diamond",
+    avatar: "https://i.pravatar.cc/150?img=47",
+    quote: {
+      ru: "Очень довольна результатом! Поднялась с Золота до Платины за 3 дня. Поддержка всегда на связи, отвечают быстро. Буду обращаться еще!",
+      en: "Very satisfied with the result! Climbed from Gold to Platinum in 3 days. Support is always available and responds quickly. Will use again!",
+    },
   },
   {
-    name: "Haerin Song",
-    company: "Visa",
-    avatar: `${CDN}/haerin.683bc17a.jpeg`,
-    companyLogo: `${CDN}/visa.f9c2158f.webp`,
-    quote: "By using the Mobbin app, I save both my research time and space in my photo galleries filled with random screenshots. I love how easy it is to search for different patterns and copy and paste flows into Figma. It is a wonderful design tool you cannot live without!",
+    name: "IronFist",
+    rank: "CS2 Supreme",
+    avatar: "https://i.pravatar.cc/150?img=52",
+    quote: {
+      ru: "Надежный сервис с адекватными ценами. Буст прошел без проблем, все конфиденциально. Бустер играл аккуратно, без подозрительных действий. Рекомендую!",
+      en: "Reliable service with reasonable prices. Boost went smoothly, everything confidential. Booster played carefully without suspicious actions. Recommend!",
+    },
   },
   {
-    name: "Rachel How",
-    company: null,
-    avatar: `${CDN}/rachel.2f387582.jpeg`,
-    companyLogo: null,
-    quote: "Mobbin is my go-to reference for app & web design. Apart from saving countless hours, it gives me insights on the design patterns, copywriting, and user flows of world-class products. A must-have for creative inspiration and efficiency!",
+    name: "DragonSlayer",
+    rank: "Valorant Radiant",
+    avatar: "https://i.pravatar.cc/150?img=15",
+    quote: {
+      ru: "Лучший сервис буста, которым я пользовался. Быстро, качественно, безопасно. Достиг Радианта благодаря профессиональной команде. Спасибо!",
+      en: "Best boosting service I've used. Fast, quality, safe. Reached Radiant thanks to the professional team. Thank you!",
+    },
   },
 ];
 
-function TestimonialCard({ t }: { t: typeof testimonials[0] }) {
+function TestimonialCard({ t, lang }: { t: typeof testimonials[0]; lang: "en" | "ru" }) {
   return (
     <figure
       style={{
@@ -70,33 +82,20 @@ function TestimonialCard({ t }: { t: typeof testimonials[0] }) {
               loading="lazy"
             />
           </div>
-          {t.companyLogo && (
-            <div style={{
-              position: "absolute",
-              bottom: -2,
-              right: -2,
-              width: 18,
-              height: 18,
-              borderRadius: "50%",
-              border: "2px solid var(--bg-primary)",
-              background: "var(--bg-primary)",
-              overflow: "hidden",
-            }}>
-              <img src={t.companyLogo} alt={t.company || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
-            </div>
-          )}
         </div>
         <div>
           <p className="text-body-bold">{t.name}</p>
-          {t.company && <p className="text-compact text-secondary">{t.company}</p>}
+          <p className="text-compact text-secondary">{t.rank}</p>
         </div>
       </figcaption>
-      <blockquote className="text-body">{t.quote}</blockquote>
+      <blockquote className="text-body">{t.quote[lang]}</blockquote>
     </figure>
   );
 }
 
 export default function Testimonials() {
+  const { lang } = useLang();
+
   return (
     <section id="testimonials" style={{
       padding: "80px 24px",
@@ -118,12 +117,12 @@ export default function Testimonials() {
 
       <div style={{ maxWidth: 1280, margin: "0 auto" }}>
         <h2 className="text-spotlight" style={{ textAlign: "center", maxWidth: 500, margin: "0 auto 48px", textWrap: "balance" }}>
-          What our users are saying.
+          {lang === "ru" ? "Отзывы наших клиентов" : "What our players are saying"}
         </h2>
 
         <div style={{ columns: "4 240px", columnGap: 16 }}>
           {testimonials.map((t) => (
-            <TestimonialCard key={t.name} t={t} />
+            <TestimonialCard key={t.name} t={t} lang={lang} />
           ))}
         </div>
       </div>
